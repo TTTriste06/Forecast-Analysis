@@ -12,11 +12,7 @@ def main():
     
     template_file, forecast_file, order_file, sales_file, start = get_uploaded_files()
     
-    if start:
-        if not all([template_file, forecast_file, order_file, sales_file]):
-            st.error("❌ 请上传所有所需文件")
-            st.stop()
-    
+    if start:    
         template_df = load_file_with_github_fallback("template", template_file, sheet_name=0)
         forecast_df = load_file_with_github_fallback("forecast", forecast_file, sheet_name=0)
         order_df = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
