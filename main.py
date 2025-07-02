@@ -1,9 +1,11 @@
+# main.py
 import streamlit as st
 import pandas as pd
 from datetime import datetime
 from io import BytesIO
 from ui import setup_sidebar, get_uploaded_files
 from pivot_processor import PivotProcessor
+from github_utils import load_file_with_github_fallback
 
 st.set_page_config(page_title="预测分析主计划工具", layout="wide")
 st.title("📊 预测分析主计划生成器")
@@ -16,8 +18,13 @@ if start:
         st.error("❌ 请上传所有所需文件")
         st.stop()
 
+    template_df = load_file_with_github_fallback("template", template_file, sheet_name=0, header=1)
+    forecast_df = load_file_with_github_fallback("forecast", forecast_file, sheet_name=0)
+    order_df = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
+    sales_df = load_file_with_github_fallback("sales", sales_file, sheet_name="原表")
+
     processor = PivotProcessor()
-    df_result, excel_output = processor.process(template_file, forecast_file, order_file, sales_file)
+    df_result, excel_output = processor.process(template_df, forecast_df, order_df, sales_df)
 
     st.success("✅ 主计划生成成功！")
     st.dataframe(df_result, use_container_width=True)
