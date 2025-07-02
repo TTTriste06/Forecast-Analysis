@@ -3,11 +3,14 @@ import re
 from io import BytesIO
 import streamlit as st
 from openpyxl.styles import Alignment, Font
+from urllib.parse import quote
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file):
         
-        raw_mapping_url = "https://raw.githubusercontent.com/TTTriste06/operation_planning-/main/新旧料号.xlsx"
+        raw_path = "operation_planning-/main/新旧料号.xlsx"
+        raw_mapping_url = "https://raw.githubusercontent.com/TTTriste06/" + quote(raw_path)
+
         mapping_df = pd.read_excel(raw_mapping_url)
        
         st.write(template_file)
