@@ -73,15 +73,9 @@ class PivotProcessor:
         st.write(sales_file)
         
         FIELD_MAPPINGS = {
-            "forecast": {
-                "品名": "生产料号"
-            },
-            "order": {
-                "品名": "品名"
-            },
-            "sales": {
-                "品名": "品名"
-            }
+            "forecast": {"品名": "生产料号"},
+            "order": {"品名": "品名"},
+            "sales": {"品名": "品名"}
         }
         
 
@@ -97,7 +91,7 @@ class PivotProcessor:
 
         # Step 3: 提取月份列
         month_pattern = re.compile(r"(\d{1,2})月预测")
-        month_cols = [col for col in df_forecast.columns if month_pattern.match(col)]
+        month_cols = [col for col in forecast_file.columns if month_pattern.match(col)]
         forecast_months = [f"2025-{month_pattern.match(col).group(1).zfill(2)}" for col in month_cols]
 
         # Step 4: 初始化列
@@ -107,11 +101,11 @@ class PivotProcessor:
             main_df[f"{ym}-出货"] = 0
 
         # Step 5: 填入预测数据
-        df_forecast["品名"] = df_forecast["生产料号"].astype(str).str.strip()
+        forecast_file["品名"] = forecast_file["生产料号"].astype(str).str.strip()
         for col in month_cols:
             month_num = month_pattern.match(col).group(1).zfill(2)
             ym = f"2025-{month_num}"
-            summary = df_forecast.groupby("品名")[col].sum(min_count=1)
+            summary = forecast_file.groupby("品名")[col].sum(min_count=1)
             main_df[f"{ym}-预测"] = main_df["品名"].map(summary).fillna(0)
 
         # Step 6: 填入订单数据
