@@ -4,6 +4,10 @@ from io import BytesIO
 import streamlit as st
 from openpyxl.styles import Alignment, Font
 from urllib.parse import quote
+from mapping_utils import (
+    apply_mapping_and_merge, 
+    apply_extended_substitute_mapping
+)
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file):
