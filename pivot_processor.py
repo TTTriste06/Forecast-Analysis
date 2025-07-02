@@ -68,6 +68,19 @@ class PivotProcessor:
         main_df = template_file[["晶圆", "规格", "品名"]].copy()
         main_df.columns = ["晶圆品名", "规格", "品名"]
 
+        FIELD_MAPPINGS = {
+            "forecast": {
+                "品名": "生产料号"
+            },
+            "order": {
+                "品名": "品名"
+            }
+            "sales": {
+                "品名": "品名"
+            }
+        }
+        
+
         # Step 2: 进行新旧料号替换 
         all_replaced_names = set()
         for df, key in zip([forecast_file, order_file, sales_file], ["forecast", "order", "sales"]):
