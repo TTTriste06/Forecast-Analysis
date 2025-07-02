@@ -1,64 +1,30 @@
 import streamlit as st
-from io import BytesIO
-from datetime import datetime
 import pandas as pd
-
-from pivot_processor import PivotProcessor
+from datetime import datetime
+from io import BytesIO
 from ui import setup_sidebar, get_uploaded_files
-from github_utils import load_file_with_github_fallback
-from urllib.parse import quote
+from pivot_processor import PivotProcessor
 
-def main():
-    st.set_page_config(page_title="Excel工具", layout="wide")
-    setup_sidebar()
+st.set_page_config(page_title="预测分析主计划工具", layout="wide")
+st.title("📊 预测分析主计划生成器")
 
-    # 获取上传文件
-    forecast_file, order_file, sales_file, start = get_uploaded_files()
-    
-    if start:            
-        # 加载辅助表
-        df_forecast = load_file_with_github_fallback("forecast", forecast_file, sheet_name="Sheet1")
-        df_order = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
-        df_sales = load_file_with_github_fallback("sales", sales_file, sheet_name="Sheet1")
+setup_sidebar()
+template_file, forecast_file, order_file, sales_file, start = get_uploaded_files()
 
-        # 初始化处理器
-        buffer = BytesIO()
-        processor = PivotProcessor()
-        processor.process(buffer, df_forecast, df_order, df_sales)
+if start:
+    if not all([template_file, forecast_file, order_file, sales_file]):
+        st.error("❌ 请上传所有所需文件")
+        st.stop()
 
-        # 下载文件按钮
-        file_name = f"预测分析_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        st.success("✅ 汇总完成！你可以下载结果文件：")
-        st.download_button(
-            label="📥 下载 Excel 汇总报告",
-            data=buffer.getvalue(),
-            file_name=file_name,
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    processor = PivotProcessor()
+    df_result, excel_output = processor.process(template_file, forecast_file, order_file, sales_file)
 
-        # Sheet 预览
-        try:
-            buffer.seek(0)
-            with pd.ExcelFile(buffer, engine="openpyxl") as xls:
-                sheet_names = xls.sheet_names
-                tabs = st.tabs(sheet_names)
-                for i, sheet_name in enumerate(sheet_names):
-                    try:
-                        df = pd.read_excel(xls, sheet_name=sheet_name)
-                        with tabs[i]:
-                            st.subheader(f"📄 {sheet_name}")
-                            st.dataframe(df, use_container_width=True)
-                    except Exception as e:
-                        with tabs[i]:
-                            st.error(f"❌ 无法读取工作表 `{sheet_name}`: {e}")
-        except Exception as e:
-            st.warning(f"⚠️ 无法预览生成的 Excel 文件：{e}")
+    st.success("✅ 主计划生成成功！")
+    st.dataframe(df_result, use_container_width=True)
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        import traceback
-        print("❌ Streamlit app crashed:", e)
-        traceback.print_exc()
-
+    st.download_button(
+        label="📥 下载主计划 Excel 文件",
+        data=excel_output.getvalue(),
+        file_name=f"预测分析主计划_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
