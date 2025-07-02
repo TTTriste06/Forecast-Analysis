@@ -20,6 +20,7 @@ class PivotProcessor:
         except Exception as e:
             raise ValueError(f"❌ 加载新旧料号映射表失败：{e}")
 
+        st.write(mapping_df)
         # 创建新的 mapping_semi：仅保留“半成品”字段非空的行
         mapping_semi1 = mapping_df[
             ["新晶圆品名", "新规格", "新品名", "半成品"]
