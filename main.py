@@ -13,13 +13,9 @@ def main():
     setup_sidebar()
 
     # 获取上传文件
-    uploaded_files, forecast_file, safety_file, mapping_file, pc_file, selected_date, start = get_uploaded_files()
+    forecast_file, order_file, sales_file, start = get_uploaded_files()
     
     if start:            
-        if len(uploaded_files) < 8:
-            st.error("❌ 请上传 8 个核心文件（未交订单/成品在制/成品库存/CP在制/晶圆库存/下单明细/销货明细/到货明细）！")
-            return
-            
         # 加载辅助表
         df_forecast = load_file_with_github_fallback("forecast", forecast_file, sheet_name="Sheet1")
         df_safety = load_file_with_github_fallback("safety", safety_file)
