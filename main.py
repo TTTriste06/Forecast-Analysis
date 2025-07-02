@@ -18,7 +18,7 @@ def main():
     if start:            
         # 加载辅助表
         df_forecast = load_file_with_github_fallback("forecast", forecast_file, sheet_name="Sheet1")
-        df_order = load_file_with_github_fallback("order", order_file, sheet_name="Sheet1")
+        df_order = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
         df_sales = load_file_with_github_fallback("sales", sales_file, sheet_name="Sheet1")
 
         st.write(df_forecast)
