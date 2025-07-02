@@ -15,29 +15,26 @@ from mapping_utils import (
     apply_all_name_replacements
 )
 
-
 class PivotProcessor:
-    def process(self, uploaded_files: dict, output_buffer, additional_sheets: dict = None, start_date: date = None):
+    def process(self, output_buffer, df_forecast, df_order, df_sales):
         """
         替换品名、新建主计划表，并直接写入 Excel 文件（含列宽调整、标题行）。
         """
-        # === 标准化上传文件名 ===
-        self.dataframes = {}
-        for filename, file_obj in uploaded_files.items():
-            matched = False
-            for keyword, standard_name in FILE_KEYWORDS.items():
-                if keyword in filename:
-                    self.dataframes[standard_name] = pd.read_excel(file_obj)
-                    matched = True
-                    break
-            if not matched:
-                st.warning(f"⚠️ 上传文件 `{filename}` 未识别关键词，跳过")
-
         # === 标准化新旧料号表 ===
-        self.additional_sheets = additional_sheets
-        mapping_df = self.additional_sheets.get("赛卓-新旧料号")
-        if mapping_df is None or mapping_df.empty:
-            raise ValueError("❌ 缺少新旧料号映射表，无法进行品名替换。")
+        url = "https://github.com/TTTriste06/operation_planning-/blob/main/新旧料号.xlsx"
+        mapping_df = pd.read_csv(url)
+        st.dataframe(mapping_df)
+
+        # === 提取模版 ===
+        url = "https://github.com/TTTriste06/Forecast-Analysis/blob/main/预测分析.xlsx"
+        main_df = pd.read_csv(url)
+        st.dataframe(main_df)
+
+        st.write(df_forecast)
+        st.write(df_order)
+        st.write(df_sales)
+        st.write(mapping_df)
+        st.write(main_df)
 
         # 创建新的 mapping_semi：仅保留“半成品”字段非空的行
         mapping_semi1 = mapping_df[
@@ -79,7 +76,6 @@ class PivotProcessor:
             mapping_sub = pd.concat([mapping_sub, sub_df], ignore_index=True)
         
         # === 构建主计划 ===
-        headers = ["晶圆品名", "规格", "品名", "封装厂", "封装形式", "PC"]
         main_plan_df = pd.DataFrame(columns=headers)
 
         ## == 品名 ==
@@ -103,22 +99,7 @@ class PivotProcessor:
         if not all_names.empty:
             main_plan_df["品名"] = all_names.values
 
-        ## == 规格和晶圆 ==
-        main_plan_df = fill_spec_and_wafer_info(
-            main_plan_df,
-            self.dataframes,
-            self.additional_sheets,
-            mapping_semi, 
-            FIELD_MAPPINGS
-        )
 
-        ## == 封装厂，封装形式和PC ==
-        main_plan_df = fill_packaging_info(
-            main_plan_df,
-            dataframes=self.dataframes,
-            additional_sheets=self.additional_sheets
-        )
-        st.success("✅ 已合并产品信息")
 
         ## == 替换新旧料号、替代料号 ==
         target_sheets = [
@@ -151,73 +132,8 @@ class PivotProcessor:
             # 更新回字典
             container[sheet_name] = df_new
         
-        # 最终排序
-        all_replaced_names = sorted(all_replaced_names)
 
-        ## == 安全库存 ==
-        safety_df = self.additional_sheets.get("赛卓-安全库存")
-        if safety_df is not None and not safety_df.empty:
-            main_plan_df, unmatched_safety = merge_safety_inventory(main_plan_df, safety_df)
-            st.success("✅ 已合并安全库存数据")
-        
-        ## == 未交订单 ==
-        unfulfilled_df = self.dataframes.get("赛卓-未交订单")
-        if unfulfilled_df is not None and not unfulfilled_df.empty:
-            main_plan_df, unmatched_unfulfilled = append_unfulfilled_summary_columns_by_date(main_plan_df, unfulfilled_df, start_date)
-            st.success("✅ 已合并未交订单数据")
-        
-        ## == 预测 ==
-        forecast_df = self.additional_sheets.get("赛卓-预测")
-        if forecast_df is not None and not forecast_df.empty:
-            main_plan_df, unmatched_forecast = append_forecast_to_summary(main_plan_df, forecast_df, start_date)
-            st.success("✅ 已合并预测数据")
-
-        ## == 成品库存 ==
-        finished_df = self.dataframes.get("赛卓-成品库存")
-        if finished_df is not None and not finished_df.empty:
-            main_plan_df, unmatched_finished = merge_finished_inventory_with_warehouse_types(main_plan_df, finished_df, mapping_semi)
-            st.success("✅ 已合并成品库存数据")
-
-        ## == 成品在制 ==
-        product_in_progress_df = self.dataframes.get("赛卓-成品在制")
-        if product_in_progress_df is not None and not product_in_progress_df.empty:
-            main_plan_df, unmatched_in_progress = append_product_in_progress(main_plan_df, product_in_progress_df, mapping_semi)
-            st.success("✅ 已合并成品在制数据")
-
-        ## == 发货金额 ==
-        if unfulfilled_df is not None and not unfulfilled_df.empty:
-            main_plan_df = append_order_delivery_amount_columns(main_plan_df, unfulfilled_df, start_date)
-            st.success("✅ 已合并发货金额")
-
-        # === 投单计划 ===
-        forecast_months = init_monthly_fields(main_plan_df, start_date)
-
-        # 成品&半成品实际投单
-        df_order = self.dataframes.get("赛卓-下单明细", pd.DataFrame())
-        main_plan_df = aggregate_actual_fg_orders(main_plan_df, df_order, forecast_months)
-        main_plan_df = aggregate_actual_sfg_orders(main_plan_df, df_order, mapping_semi, forecast_months)
-
-        # 回货实际
-        df_arrival = self.dataframes.get("赛卓-到货明细", pd.DataFrame())
-        main_plan_df = aggregate_actual_arrivals(main_plan_df, df_arrival, forecast_months)
-
-        # 销售数量&销售金额
-        df_sales = self.dataframes.get("赛卓-销货明细", pd.DataFrame())
-        main_plan_df = aggregate_sales_quantity_and_amount(main_plan_df, df_sales, forecast_months)
-
-        # 成品投单计划
-        main_plan_df = generate_monthly_fg_plan(main_plan_df, forecast_months)
-
-        # 半成品投单计划
-        main_plan_df = generate_monthly_semi_plan(main_plan_df, forecast_months, mapping_semi)
-
-        # 添加预测准确率列
-        main_plan_df = append_forecast_accuracy_column(main_plan_df, start_date)
-
-        # 检查
-        main_plan_df = drop_last_forecast_month_columns(main_plan_df, forecast_months)
-        
-        st.success("✅ 已合并投单计划")
+    
          
         # === 写入 Excel 文件（主计划）===
         timestamp = datetime.now().strftime("%Y%m%d")
