@@ -13,7 +13,8 @@ BRANCH = "main"
 FILENAME_KEYS = {
     "forecast": "预测.xlsx",
     "order": "未交订单.xlsx",
-    "sales": "出货明细.xlsx"
+    "sales": "出货明细.xlsx",
+    "template": "预测分析.xlsx"
 }
 
 def upload_to_github(file_obj, filename):
