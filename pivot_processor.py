@@ -74,7 +74,7 @@ class PivotProcessor:
             },
             "order": {
                 "品名": "品名"
-            }
+            },
             "sales": {
                 "品名": "品名"
             }
