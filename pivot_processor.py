@@ -62,7 +62,7 @@ class PivotProcessor:
 
 
         # Step 1: 读取主计划模板
-        main_df = template_df[["晶圆", "规格", "品名"]].copy()
+        main_df = template_file[["晶圆", "规格", "品名"]].copy()
         main_df.columns = ["晶圆品名", "规格", "品名"]
         st.write(main_df)
 
