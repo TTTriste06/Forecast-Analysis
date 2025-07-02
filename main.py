@@ -24,8 +24,7 @@ def main():
         # 初始化处理器
         buffer = BytesIO()
         processor = PivotProcessor()
-        processor.set_additional_data(additional_sheets)
-        processor.process(uploaded_files, buffer, additional_sheets, start_date=selected_date)
+        processor.process(buffer, df_forecast, df_order, df_sales)
 
         # 下载文件按钮
         file_name = f"预测分析_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
