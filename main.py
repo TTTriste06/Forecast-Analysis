@@ -17,7 +17,7 @@ def main():
             st.error("❌ 请上传所有所需文件")
             st.stop()
     
-        template_df = load_file_with_github_fallback("template", template_file, sheet_name=0, header=1)
+        template_df = load_file_with_github_fallback("template", template_file, sheet_name=0)
         forecast_df = load_file_with_github_fallback("forecast", forecast_file, sheet_name=0)
         order_df = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
         sales_df = load_file_with_github_fallback("sales", sales_file, sheet_name=0)
