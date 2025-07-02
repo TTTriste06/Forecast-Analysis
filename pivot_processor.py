@@ -8,10 +8,17 @@ from urllib.parse import quote
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file):
         
-        raw_path = "operation_planning-/main/新旧料号.xlsx"
-        raw_mapping_url = "https://raw.githubusercontent.com/TTTriste06/" + quote(raw_path)
+        # 🔗 构建 raw URL，确保路径中文被编码
+        raw_mapping_url = (
+            "https://raw.githubusercontent.com/TTTriste06/operation_planning-/main/"
+            + quote("新旧料号.xlsx")
+        )
 
-        mapping_df = pd.read_excel(raw_mapping_url)
+        # 📥 尝试加载
+        try:
+            mapping_df = pd.read_excel(raw_mapping_url)
+        except Exception as e:
+            raise ValueError(f"❌ 加载新旧料号映射表失败：{e}")
        
         st.write(template_file)
         st.write(forecast_file)
