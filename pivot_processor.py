@@ -61,19 +61,12 @@ class PivotProcessor:
 
 
         # Step 1: 读取主计划模板
-        st.write(template_file)
         main_df = template_file[["晶圆", "规格", "品名"]].copy()
         main_df.columns = ["晶圆品名", "规格", "品名"]
-        st.write(main_df)
 
-        # Step 2: 加载数据
-        df_forecast = pd.read_excel(forecast_file)
-        df_order = pd.read_excel(order_file, sheet_name="Sheet")
-        df_sales = pd.read_excel(sales_file, sheet_name="原表")
-
-        # === 进行新旧料号替换 ===
+        # Step 2: 进行新旧料号替换 
         all_replaced_names = set()
-        for df, key in zip([df_forecast, df_order, df_sales], ["forecast", "order", "sales"]):
+        for df, key in zip([forecast_file, order_file, sales_file], ["forecast", "order", "sales"]):
             df, replaced_main = apply_mapping_and_merge(df, mapping_df, FIELD_MAPPINGS[key])
             all_replaced_names.update(replaced_main)
             df, replaced_sub = apply_extended_substitute_mapping(df, mapping_df, FIELD_MAPPINGS[key])
