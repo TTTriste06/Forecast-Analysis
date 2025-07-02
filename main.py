@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from io import BytesIO
-from ui import setup_sidebar, get_uploaded_files
+from ui import get_uploaded_files
 from pivot_processor import PivotProcessor
 from github_utils import load_file_with_github_fallback
 
