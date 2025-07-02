@@ -1,9 +1,22 @@
+# ui.py
 import streamlit as st
 
+def setup_sidebar():
+    st.sidebar.header("📤 工具简介")
+    st.sidebar.markdown("请上传以下文件以生成主计划")
+
 def get_uploaded_files():
-    template_file = st.sidebar.file_uploader("📁 上传主计划模板", type="xlsx", key="template")
-    forecast_file = st.sidebar.file_uploader("📈 上传预测数据", type="xlsx", key="forecast")
-    order_file = st.sidebar.file_uploader("📦 上传未交订单", type="xlsx", key="order")
-    sales_file = st.sidebar.file_uploader("🚚 上传出货明细", type="xlsx", key="sales")
-    start = st.sidebar.button("🚀 生成主计划")
+    st.subheader("📁 上传主计划模板")
+    template_file = st.file_uploader("上传主计划模板", type="xlsx", key="template")
+
+    st.subheader("📈 上传预测数据")
+    forecast_file = st.file_uploader("上传预测数据", type="xlsx", key="forecast")
+
+    st.subheader("📦 上传未交订单")
+    order_file = st.file_uploader("上传未交订单", type="xlsx", key="order")
+
+    st.subheader("🚚 上传出货明细")
+    sales_file = st.file_uploader("上传出货明细", type="xlsx", key="sales")
+
+    start = st.button("🚀 生成主计划")
     return template_file, forecast_file, order_file, sales_file, start
