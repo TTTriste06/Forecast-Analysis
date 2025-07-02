@@ -7,7 +7,7 @@ from urllib.parse import quote
 
 # GitHub 配置
 GITHUB_TOKEN_KEY = "GITHUB_TOKEN"  # secrets.toml 中的密钥名
-REPO_NAME = "TTTriste06/operation_planning-"
+REPO_NAME = "TTTriste06/Forecast-Analysis"
 BRANCH = "main"
 
 FILENAME_KEYS = {
