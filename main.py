@@ -21,10 +21,6 @@ def main():
         df_order = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
         df_sales = load_file_with_github_fallback("sales", sales_file, sheet_name="Sheet1")
 
-        st.write(df_forecast)
-        st.write(df_order)
-        st.write(df_sales)
-
         # 初始化处理器
         buffer = BytesIO()
         processor = PivotProcessor()
@@ -32,7 +28,7 @@ def main():
         processor.process(uploaded_files, buffer, additional_sheets, start_date=selected_date)
 
         # 下载文件按钮
-        file_name = f"运营数据订单-在制-库存汇总报告_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        file_name = f"预测分析_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         st.success("✅ 汇总完成！你可以下载结果文件：")
         st.download_button(
             label="📥 下载 Excel 汇总报告",
