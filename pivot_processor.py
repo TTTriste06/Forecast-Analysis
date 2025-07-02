@@ -7,7 +7,6 @@ from openpyxl.utils import get_column_letter
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 
-from config import FILE_KEYWORDS, FIELD_MAPPINGS, pivot_config, RENAME_MAP
 from mapping_utils import (
     clean_mapping_headers, 
     replace_all_names_with_mapping, 
