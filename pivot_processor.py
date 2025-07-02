@@ -20,15 +20,11 @@ class PivotProcessor:
         """
         替换品名、新建主计划表，并直接写入 Excel 文件（含列宽调整、标题行）。
         """
-        # === 标准化新旧料号表 ===
-        url = "https://github.com/TTTriste06/operation_planning-/blob/main/新旧料号.xlsx"
-        mapping_df = pd.read_csv(url)
-        st.dataframe(mapping_df)
-
-        # === 提取模版 ===
-        url = "https://github.com/TTTriste06/Forecast-Analysis/blob/main/预测分析.xlsx"
-        main_df = pd.read_csv(url)
-        st.dataframe(main_df)
+        # === 读取文件 ===
+        raw_mapping_url = "https://raw.githubusercontent.com/TTTriste06/operation_planning-/main/新旧料号.xlsx"
+        raw_template_url = "https://raw.githubusercontent.com/TTTriste06/Forecast-Analysis/main/预测分析.xlsx"
+        mapping_df = pd.read_excel(raw_mapping_url)
+        main_df = pd.read_excel(raw_template_url)
 
         st.write(df_forecast)
         st.write(df_order)
@@ -248,18 +244,3 @@ class PivotProcessor:
 
         output_buffer.seek(0)
        
-    def set_additional_data(self, sheets_dict):
-        """
-        设置辅助数据表，如 预测、安全库存、新旧料号 等
-        """
-        self.additional_sheets = sheets_dict or {}
-    
-        # ✅ 对新旧料号进行列名清洗
-        mapping_df = self.additional_sheets.get("赛卓-新旧料号")
-        if mapping_df is not None and not mapping_df.empty:
-            try:
-                cleaned = clean_mapping_headers(mapping_df)
-                self.additional_sheets["赛卓-新旧料号"] = cleaned
-            except Exception as e:
-                raise ValueError(f"❌ 新旧料号表清洗失败：{e}")
-
