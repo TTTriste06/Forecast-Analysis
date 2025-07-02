@@ -5,6 +5,16 @@ from openpyxl.styles import Alignment, Font
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file):
+        
+        raw_mapping_url = "https://raw.githubusercontent.com/TTTriste06/operation_planning-/main/新旧料号.xlsx"
+        mapping_df = pd.read_excel(raw_mapping_url)
+       
+        st.write(template_file)
+        st.write(forecast_file)
+        st.write(order_file)
+        st.write(sales_file)
+        st.write(mapping_df)
+        
         # Step 1: 读取主计划模板
         main_df = pd.read_excel(template_file, sheet_name=0, header=1)
         main_df = main_df[["晶圆", "规格", "品名"]].copy()
