@@ -9,7 +9,6 @@ from github_utils import load_file_with_github_fallback
 st.set_page_config(page_title="预测分析主计划工具", layout="wide")
 st.title("📊 预测分析主计划生成器")
 
-setup_sidebar()
 template_file, forecast_file, order_file, sales_file, start = get_uploaded_files()
 
 if start:
