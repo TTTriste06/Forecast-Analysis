@@ -9,7 +9,7 @@ from github_utils import load_file_with_github_fallback
 from urllib.parse import quote
 
 def main():
-    st.set_page_config(page_title="Excel数据透视汇总工具", layout="wide")
+    st.set_page_config(page_title="Excel工具", layout="wide")
     setup_sidebar()
 
     # 获取上传文件
@@ -18,16 +18,12 @@ def main():
     if start:            
         # 加载辅助表
         df_forecast = load_file_with_github_fallback("forecast", forecast_file, sheet_name="Sheet1")
-        df_safety = load_file_with_github_fallback("safety", safety_file)
-        df_mapping = load_file_with_github_fallback("mapping", mapping_file)
-        df_pc = load_file_with_github_fallback("pc", pc_file)
-        
-        additional_sheets = {
-            "赛卓-预测": df_forecast,
-            "赛卓-安全库存": df_safety,
-            "赛卓-新旧料号": df_mapping,
-            "赛卓-供应商-PC": df_pc
-        }
+        df_order = load_file_with_github_fallback("order", order_file, sheet_name="Sheet1")
+        df_sales = load_file_with_github_fallback("sales", sales_file, sheet_name="Sheet1")
+
+        st.write(df_forecast)
+        st.write(df_order)
+        st.write(df_sales)
 
         # 初始化处理器
         buffer = BytesIO()
