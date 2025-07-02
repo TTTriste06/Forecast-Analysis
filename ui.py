@@ -1,9 +1,5 @@
 import streamlit as st
 
-def setup_sidebar():
-    st.sidebar.header("📤 上传文件")
-    st.sidebar.markdown("上传以下文件以生成主计划：")
-
 def get_uploaded_files():
     template_file = st.sidebar.file_uploader("📁 上传主计划模板", type="xlsx", key="template")
     forecast_file = st.sidebar.file_uploader("📈 上传预测数据", type="xlsx", key="forecast")
