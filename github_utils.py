@@ -12,13 +12,8 @@ BRANCH = "main"
 
 FILENAME_KEYS = {
     "forecast": "预测.xlsx",
-    "safety": "安全库存.xlsx",
-    "mapping": "新旧料号.xlsx",
-    "supplier": "供应商-PC.xlsx",
-    "arrival": "到货明细.xlsx",
-    "order": "下单明细.xlsx",
-    "sales": "销货明细.xlsx",
-    "pc": "供应商-PC.xlsx",
+    "order": "未交订单.xlsx",
+    "sales": "出货明细.xlsx"
 }
 
 def upload_to_github(file_obj, filename):
