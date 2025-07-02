@@ -74,37 +74,29 @@ def download_from_github(filename):
         raise FileNotFoundError(f"❌ GitHub 上找不到文件：{filename} (HTTP {response.status_code})")
 
 
-def load_file_with_github_fallback(key, uploaded_file, sheet_name="Sheet1"):
-    """
-    加载上传文件或从 GitHub 下载。如果上传了文件，就保存至 GitHub 并返回 DataFrame；
-    否则尝试从 GitHub 下载。若失败返回空 DataFrame。
-
-    参数:
-        key: str — 文件类型，如 "forecast"
-        uploaded_file: 上传文件对象或 None
-
-    返回:
-        pd.DataFrame
-    """
-    filename = FILENAME_KEYS.get(key)
-    if not filename:
-        st.warning(f"⚠️ 未识别的辅助文件类型：{key}")
-        return pd.DataFrame()
+def load_file_with_github_fallback(file_key, uploaded_file, sheet_name=0, header=0):
+    fallback_urls = {
+        "template": "https://raw.githubusercontent.com/TTTriste06/forecast-analysis/main/主计划模板.xlsx",
+        "forecast": "https://raw.githubusercontent.com/TTTriste06/forecast-analysis/main/2025年预测_20250613-运营 (3).xlsx",
+        "order": "https://raw.githubusercontent.com/TTTriste06/forecast-analysis/main/未交订单7.2.xlsx",
+        "sales": "https://raw.githubusercontent.com/TTTriste06/forecast-analysis/main/出货明细20240101-2025.xlsx",
+        "mapping": "https://raw.githubusercontent.com/TTTriste06/operation_planning-/main/新旧料号.xlsx"
+    }
 
     if uploaded_file is not None:
-        file_bytes = uploaded_file.read()
-        file_io = BytesIO(file_bytes)
-        try:
-            upload_to_github(BytesIO(file_bytes), filename)
-            st.success(f"✅ 使用上传文件并保存到 GitHub：{filename}")
-        except Exception as e:
-            st.warning(f"⚠️ 上传失败：{e}")
-        return pd.read_excel(file_io, sheet_name = sheet_name)  # ✅ 强制读取 Sheet1
+        return pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header, engine="openpyxl")
+    
+    # fallback 读取
+    if file_key not in fallback_urls:
+        raise ValueError(f"⚠️ 未识别的辅助文件类型：{file_key}")
 
-    else:
-        try:
-            content = download_from_github(filename)
-            return pd.read_excel(BytesIO(content), sheet_name=sheet_name)  # ✅ 强制读取 Sheet1
-        except FileNotFoundError as e:
-            st.warning(str(e))
-            return pd.DataFrame()
+    url = fallback_urls[file_key]
+    response = requests.get(url)
+    if not response.ok:
+        raise ValueError(f"❌ 无法从 GitHub 获取文件：{url}")
+    
+    content = response.content
+    try:
+        return pd.read_excel(BytesIO(content), sheet_name=sheet_name, header=header, engine="openpyxl")
+    except Exception as e:
+        raise ValueError(f"❌ 无法读取 Excel 文件（可能不是 .xlsx 格式）：{e}")
