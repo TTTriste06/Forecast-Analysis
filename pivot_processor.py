@@ -98,16 +98,10 @@ class PivotProcessor:
 
         # Step 5: 填入预测数据
         main_df = fill_forecast_data(main_df, forecast_file, all_months)
-        st.write(main_df)
 
         # Step 6: 填入订单数据
-        df_order["回复客户交期"] = pd.to_datetime(df_order["回复客户交期"], errors="coerce")
-        df_order["年月"] = df_order["回复客户交期"].dt.to_period("M").astype(str)
-        grouped_order = df_order.groupby(["品名", "年月"])["未交订单数量"].sum().unstack().fillna(0)
-        for ym in grouped_order.columns:
-            colname = f"{ym}-订单"
-            if colname in main_df.columns:
-                main_df[colname] = main_df["品名"].map(grouped_order[ym]).fillna(0)
+        main_df = fill_order_data(main_df, order_file, all_months)
+        st.write(main_df)
 
         # Step 7: 填入出货数据
         df_sales["交易日期"] = pd.to_datetime(df_sales["交易日期"], errors="coerce")
