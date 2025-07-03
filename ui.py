@@ -15,7 +15,7 @@ def get_uploaded_files():
     order_file = st.file_uploader("上传未交订单(Sheet)", type="xlsx", key="order")
 
     st.subheader("🚚 上传出货明细")
-    sales_file = st.file_uploader("上传出货明细(原表)", type="xlsx", key="sales")
+    sales_file = st.file_uploader("上传出货明细(Sheet1)", type="xlsx", key="sales")
 
     st.subheader("🔁 上传新旧料号")
     mapping_file = st.file_uploader("上传新旧料号", type="xlsx", key="mapping")
