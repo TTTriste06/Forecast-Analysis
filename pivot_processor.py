@@ -72,7 +72,7 @@ class PivotProcessor:
             main_df.to_excel(writer, index=False, sheet_name="预测分析", startrow=1)
             ws = writer.sheets["预测分析"]
 
-            highlight_mismatch_by_column_pairs(ws, 0)
+            highlight_mismatch_by_column_pairs(ws, 1)
 
             # === 设置基本字段（三列）合并行 ===
             for i, label in enumerate(["晶圆品名", "规格", "品名"], start=1):
