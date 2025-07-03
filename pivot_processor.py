@@ -15,7 +15,6 @@ from info_extract import extract_all_year_months, fill_forecast_data, fill_order
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file, mapping_file):
-
         if mapping_file is None:
             # 🔗 构建 raw URL，确保路径中文被编码
             raw_mapping_url = (
@@ -31,7 +30,6 @@ class PivotProcessor:
         else:
             mapping_df = pd.read_excel(mapping_file)
         mapping_semi, mapping_new, mapping_sub = split_mapping_data(mapping_df)
-
 
         # Step 1: 读取主计划模板
         main_df = template_file[["晶圆", "规格", "品名"]].copy()
