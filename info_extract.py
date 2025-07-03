@@ -151,34 +151,38 @@ def fill_sales_data(main_df, df_sales, forecast_months):
 
     return main_df
 
-def highlight_mismatch_by_column_pairs(ws, start_col):
+from openpyxl.styles import PatternFill
+
+def highlight_forecast_vs_order_skipping(ws, start_col=4):
     """
-    每隔两列成一组，从 start_col 开始：
-    - 如果左列值 > 0 且右列为 0 或空，则将这两个单元格标红。
-    
+    每4列为一组：预测列 vs 订单列（如 D-E，G-H，J-K，M-N ...）
+    如果预测 > 0 且订单为 0，则标红这两个单元格。
+
     参数：
-        ws: openpyxl 的 Worksheet 对象
-        start_col: 从第几列开始比较（默认从第4列，即 D 列）
+        ws: openpyxl worksheet 对象
+        start_col: 开始列（默认 D 列 = 4）
     """
     red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
-
     max_col = ws.max_column
     max_row = ws.max_row
 
-    for col in range(start_col, max_col, 2):  # 每隔两列为一组
-        if col + 1 > max_col:
-            break  # 右边列不存在，跳过
+    col = start_col
+    while col + 1 <= max_col:
+        forecast_col = col
+        order_col = col + 1
 
-        for row in range(2, max_row + 1):  # 从第3行开始是数据
-            left_cell = ws.cell(row=row, column=col)
-            right_cell = ws.cell(row=row, column=col + 1)
+        for row in range(3, max_row + 1):
+            cell_forecast = ws.cell(row=row, column=forecast_col)
+            cell_order = ws.cell(row=row, column=order_col)
 
             try:
-                left_val = float(left_cell.value or 0)
-                right_val = float(right_cell.value or 0)
+                val_forecast = float(cell_forecast.value or 0)
+                val_order = float(cell_order.value or 0)
             except:
                 continue
 
-            if left_val > 0 and right_val == 0:
-                left_cell.fill = red_fill
-                right_cell.fill = red_fill
+            if val_forecast > 0 and val_order == 0:
+                cell_forecast.fill = red_fill
+                cell_order.fill = red_fill
+
+        col += 3  # 每组跳过3列（预测、订单）
