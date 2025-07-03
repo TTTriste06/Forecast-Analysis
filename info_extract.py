@@ -49,3 +49,41 @@ def extract_all_year_months(df_forecast, df_order, df_sales):
         full_months = []
 
     return full_months
+
+def fill_forecast_data(main_df, df_forecast, forecast_months):
+    """
+    根据 forecast_file 中的“生产料号”字段，将“x月预测”字段数据映射到 main_df 中。
+    
+    参数：
+        main_df: 包含“品名”的主表 DataFrame
+        df_forecast: 包含“生产料号”和“x月预测”列的原始 DataFrame
+        forecast_months: 所有需要填入的月份（格式如 "2025-06"）
+
+    返回：
+        main_df: 填好预测列后的主表
+    """
+
+    # 标准化“生产料号”列作为索引键
+    df_forecast["生产料号"] = df_forecast["生产料号"].astype(str).str.strip()
+
+    # 映射为“品名”后作为匹配主键
+    df_forecast["品名"] = df_forecast["生产料号"]  # 可替换为实际替换后的品名，如有 mapping
+    df_forecast.set_index("品名", inplace=True)
+
+    # 匹配列头中的“x月预测”
+    month_pattern = re.compile(r"(\d{1,2})月预测")
+    forecast_cols = {
+        f"2025-{match.group(1).zfill(2)}": col
+        for col in df_forecast.columns
+        if (match := month_pattern.match(str(col)))
+    }
+
+    # 为每个月份填入预测值
+    for ym in forecast_months:
+        colname = f"{ym}-预测"
+        if colname in main_df.columns and ym in forecast_cols:
+            month_col = forecast_cols[ym]
+            forecast_series = df_forecast[month_col]
+            main_df[colname] = main_df["品名"].map(forecast_series).fillna(0)
+
+    return main_df
