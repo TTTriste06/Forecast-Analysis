@@ -74,6 +74,8 @@ class PivotProcessor:
             main_df.to_excel(writer, index=False, sheet_name="预测分析", startrow=1)
             ws = writer.sheets["预测分析"]
 
+            highlight_forecast_without_order(ws, all_months)
+
             # === 设置基本字段（三列）合并行 ===
             for i, label in enumerate(["晶圆品名", "规格", "品名"], start=1):
                 ws.merge_cells(start_row=1, start_column=i, end_row=2, end_column=i)
@@ -114,7 +116,6 @@ class PivotProcessor:
             
                 col += 3
 
-        
             # === 自动列宽调整 ===
             for col_idx, column_cells in enumerate(ws.columns, 1):
                 max_length = 0
@@ -125,8 +126,6 @@ class PivotProcessor:
                     except:
                         pass
                 ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 10
-                
-            highlight_forecast_without_order(ws, all_months)
 
         output.seek(0)
         return main_df, output
