@@ -3,6 +3,7 @@ import re
 from io import BytesIO
 import streamlit as st
 from openpyxl.styles import Alignment, Font
+from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
 from urllib.parse import quote
 from mapping_utils import (
@@ -122,18 +123,37 @@ class PivotProcessor:
                 cell.font = Font(bold=True)
         
             # === 合并每月三列，并设置标题 ===
-            col = 4  # 从第4列开始为预测数据
-            for ym in all_months:
+            fill_colors = [
+                "FFF2CC",  # 浅黄色
+                "D9EAD3",  # 浅绿色
+                "D0E0E3",  # 浅蓝色
+                "F4CCCC",  # 浅红色
+                "EAD1DC",  # 浅紫色
+                "CFE2F3",  # 浅青色
+                "FFE599",  # 明亮黄
+            ]
+            
+            col = 4
+            for i, ym in enumerate(forecast_months):
                 ws.merge_cells(start_row=1, start_column=col, end_row=1, end_column=col + 2)
                 top_cell = ws.cell(row=1, column=col)
                 top_cell.value = ym
                 top_cell.alignment = Alignment(horizontal="center", vertical="center")
                 top_cell.font = Font(bold=True)
-        
+            
+                # 设置底部三列
                 ws.cell(row=2, column=col).value = "预测"
                 ws.cell(row=2, column=col + 1).value = "订单"
                 ws.cell(row=2, column=col + 2).value = "出货"
+            
+                # 应用颜色样式
+                fill = PatternFill(start_color=fill_colors[i % len(fill_colors)], end_color=fill_colors[i % len(fill_colors)], fill_type="solid")
+                for j in range(col, col + 3):
+                    ws.cell(row=1, column=j).fill = fill
+                    ws.cell(row=2, column=j).fill = fill
+            
                 col += 3
+
         
             # === 自动列宽调整 ===
             for col_idx, column_cells in enumerate(ws.columns, 1):
