@@ -70,10 +70,6 @@ class PivotProcessor:
         # Step 1: 读取主计划模板
         main_df = template_file[["晶圆", "规格", "品名"]].copy()
         main_df.columns = ["晶圆品名", "规格", "品名"]
-
-        st.write(forecast_file)
-        st.write(order_file)
-        st.write(sales_file)
         
         FIELD_MAPPINGS = {
             "forecast": {"品名": "生产料号"},
