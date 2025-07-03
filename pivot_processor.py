@@ -11,7 +11,7 @@ from mapping_utils import (
     apply_extended_substitute_mapping,
     split_mapping_data
 )
-from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data, highlight_forecast_without_order
+from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data, highlight_mismatch_by_column_pairs
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file, mapping_file):
