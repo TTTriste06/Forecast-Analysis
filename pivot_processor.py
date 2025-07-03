@@ -5,6 +5,7 @@ import streamlit as st
 from openpyxl.styles import Alignment, Font
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
+from openpyxl import load_workbook
 from urllib.parse import quote
 from mapping_utils import (
     apply_mapping_and_merge, 
@@ -16,7 +17,7 @@ from info_extract import (
     fill_forecast_data, 
     fill_order_data, 
     fill_sales_data, 
-    highlight_forecast_vs_order_skipping
+    highlight_by_detecting_column_headers
 )
 
 class PivotProcessor:
@@ -78,7 +79,7 @@ class PivotProcessor:
             main_df.to_excel(writer, index=False, sheet_name="预测分析", startrow=1)
             ws = writer.sheets["预测分析"]
 
-            highlight_forecast_vs_order_skipping(ws, start_col=4)
+            highlight_by_detecting_column_headers(ws)
 
             # === 设置基本字段（三列）合并行 ===
             for i, label in enumerate(["晶圆品名", "规格", "品名"], start=1):
