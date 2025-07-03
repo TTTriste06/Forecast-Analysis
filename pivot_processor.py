@@ -134,7 +134,7 @@ class PivotProcessor:
             ]
             
             col = 4
-            for i, ym in enumerate(forecast_months):
+            for i, ym in enumerate(all_months):
                 ws.merge_cells(start_row=1, start_column=col, end_row=1, end_column=col + 2)
                 top_cell = ws.cell(row=1, column=col)
                 top_cell.value = ym
