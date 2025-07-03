@@ -40,6 +40,7 @@ def extract_all_year_months(df_forecast, df_order, df_sales):
     # 合并并去重
     all_months = sorted(set(forecast_months + order_months + sales_months))
 
+    """
     # 生成从最小到最大之间的所有月份
     if all_months:
         min_month = pd.Period(min(all_months), freq="M")
@@ -47,8 +48,9 @@ def extract_all_year_months(df_forecast, df_order, df_sales):
         full_months = [str(p) for p in pd.period_range(min_month, max_month, freq="M")]
     else:
         full_months = []
-
-    return full_months
+    """
+    
+    return all_months
 
 def fill_forecast_data(main_df, df_forecast, forecast_months):
     """
