@@ -16,7 +16,7 @@ def extract_all_year_months(df_forecast, df_order, df_sales):
             forecast_months.append(f"2025-{month}")  # ✅ 根据需要调整年份
 
     # 2. 从 order 文件第 B 列（假设是“订单日期”）
-    order_date_col = df_order.columns[1]
+    order_date_col = df_order.columns[11]
     df_order[order_date_col] = pd.to_datetime(df_order[order_date_col], errors="coerce")
     order_months = (
         df_order[order_date_col]
@@ -98,7 +98,7 @@ def fill_order_data(main_df, df_order, forecast_months):
     df_order = df_order.copy()
 
     # 确保日期字段为 datetime 类型
-    df_order["订单日期"] = pd.to_datetime(df_order["订单日期"], errors="coerce")
+    df_order["客户要求交期"] = pd.to_datetime(df_order["客户要求交期"], errors="coerce")
     df_order["年月"] = df_order["订单日期"].dt.to_period("M").astype(str)
 
     # 数值字段清洗
