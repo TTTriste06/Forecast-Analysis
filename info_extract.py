@@ -151,7 +151,7 @@ def fill_sales_data(main_df, df_sales, forecast_months):
 
     return main_df
 
-def highlight_mismatch_by_column_pairs(ws, start_col=4):
+def highlight_mismatch_by_column_pairs(ws, start_col):
     """
     每隔两列成一组，从 start_col 开始：
     - 如果左列值 > 0 且右列为 0 或空，则将这两个单元格标红。
@@ -169,7 +169,7 @@ def highlight_mismatch_by_column_pairs(ws, start_col=4):
         if col + 1 > max_col:
             break  # 右边列不存在，跳过
 
-        for row in range(3, max_row + 1):  # 从第3行开始是数据
+        for row in range(2, max_row + 1):  # 从第3行开始是数据
             left_cell = ws.cell(row=row, column=col)
             right_cell = ws.cell(row=row, column=col + 1)
 
