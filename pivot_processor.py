@@ -11,7 +11,7 @@ from mapping_utils import (
     apply_extended_substitute_mapping,
     split_mapping_data
 )
-from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data
+from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data, highlight_forecast_without_order
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file, mapping_file):
@@ -125,7 +125,8 @@ class PivotProcessor:
                     except:
                         pass
                 ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 10
-
+                
+            highlight_forecast_without_order(ws, all_months)
 
         output.seek(0)
         return main_df, output
