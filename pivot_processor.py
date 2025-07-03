@@ -99,7 +99,7 @@ class PivotProcessor:
         st.write(main_df)
 
         # Step 5: 填入预测数据
-        main_df = fill_forecast_data(main_df, forecast_file, forecast_months)
+        main_df = fill_forecast_data(main_df, forecast_file, all_months)
 
         # Step 6: 填入订单数据
         df_order["回复客户交期"] = pd.to_datetime(df_order["回复客户交期"], errors="coerce")
