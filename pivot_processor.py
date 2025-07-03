@@ -3,6 +3,7 @@ import re
 from io import BytesIO
 import streamlit as st
 from openpyxl.styles import Alignment, Font
+from openpyxl.utils import get_column_letter
 from urllib.parse import quote
 from mapping_utils import (
     apply_mapping_and_merge, 
