@@ -8,7 +8,7 @@ from mapping_utils import (
     apply_mapping_and_merge, 
     apply_extended_substitute_mapping
 )
-from info_extract import extract_all_year_months
+from info_extract import extract_all_year_months, fill_forecast_data
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file):
@@ -78,7 +78,6 @@ class PivotProcessor:
             "order": {"品名": "品名"},
             "sales": {"品名": "品名"}
         }
-        
 
         # Step 2: 进行新旧料号替换 
         all_replaced_names = set()
@@ -90,7 +89,6 @@ class PivotProcessor:
 
         # Step 3: 提取月份列
         all_months = extract_all_year_months(forecast_file, order_file, sales_file)
-        st.write("📅 涉及月份：", all_months)
 
         # Step 4: 初始化列
         for ym in all_months:
@@ -101,12 +99,7 @@ class PivotProcessor:
         st.write(main_df)
 
         # Step 5: 填入预测数据
-        forecast_file["品名"] = forecast_file["生产料号"].astype(str).str.strip()
-        for col in month_cols:
-            month_num = month_pattern.match(col).group(1).zfill(2)
-            ym = f"2025-{month_num}"
-            summary = forecast_file.groupby("品名")[col].sum(min_count=1)
-            main_df[f"{ym}-预测"] = main_df["品名"].map(summary).fillna(0)
+        main_df = fill_forecast_data(main_df, forecast_file, forecast_months)
 
         # Step 6: 填入订单数据
         df_order["回复客户交期"] = pd.to_datetime(df_order["回复客户交期"], errors="coerce")
