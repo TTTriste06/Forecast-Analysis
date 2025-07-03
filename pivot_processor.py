@@ -8,6 +8,7 @@ from mapping_utils import (
     apply_mapping_and_merge, 
     apply_extended_substitute_mapping
 )
+from info_extract import extract_all_year_months
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file):
@@ -87,46 +88,9 @@ class PivotProcessor:
             df, replaced_sub = apply_extended_substitute_mapping(df, mapping_df, FIELD_MAPPINGS[key])
             all_replaced_names.update(replaced_sub)
 
-        st.write(all_replaced_names)
-
-        def extract_all_year_months(df_forecast, df_order, df_sales):
-            # 1. 从 forecast header 提取 x月预测 列中的月份
-            month_pattern = re.compile(r"(\d{1,2})月预测")
-            forecast_months = []
-            for col in df_forecast.columns:
-                match = month_pattern.match(str(col))
-                if match:
-                    month = match.group(1).zfill(2)
-                    forecast_months.append(f"2025-{month}")  # ✅ 可根据实际年份替换
-            st.write(forecast_months)
-        
-            # 2. 从 order 文件第 B 列（假设是“回复客户交期”或“订单日期”）
-            order_date_col = df_order.columns[1]
-            df_order[order_date_col] = pd.to_datetime(df_order[order_date_col], errors="coerce")
-            order_months = df_order[order_date_col].dt.to_period("M").astype(str).dropna().unique().tolist()
-            st.write(order_months)
-        
-            # 3. 从 sales 文件第 F 列（假设是“交易日期”）
-            sales_date_col = df_sales.columns[5]
-            df_sales[sales_date_col] = pd.to_datetime(df_sales[sales_date_col], errors="coerce")
-            sales_months = df_sales[sales_date_col].dt.to_period("M").astype(str).dropna().unique().tolist()
-            st.write(sales_months)
-            
-            # 合并所有月份
-            all_months = sorted(set(forecast_months + order_months + sales_months))
-        
-            return all_months
-
-
-
         # Step 3: 提取月份列
         all_months = extract_all_year_months(forecast_file, order_file, sales_file)
         st.write("📅 涉及月份：", all_months)
-
-
-        month_pattern = re.compile(r"(\d{1,2})月预测")
-        month_cols = [col for col in forecast_file.columns if month_pattern.match(col)]
-        forecast_months = [f"2025-{month_pattern.match(col).group(1).zfill(2)}" for col in month_cols]
 
         # Step 4: 初始化列
         for ym in forecast_months:
