@@ -112,27 +112,39 @@ class PivotProcessor:
             main_df.to_excel(writer, index=False, sheet_name="预测分析", startrow=1)
             ws = writer.sheets["预测分析"]
 
-            # 合并前3列标题
+            # === 设置基本字段（三列）合并行 ===
             for i, label in enumerate(["晶圆品名", "规格", "品名"], start=1):
                 ws.merge_cells(start_row=1, start_column=i, end_row=2, end_column=i)
                 cell = ws.cell(row=1, column=i)
                 cell.value = label
                 cell.alignment = Alignment(horizontal="center", vertical="center")
                 cell.font = Font(bold=True)
-
-            # 合并月份字段
-            col = 4
-            for ym in forecast_months:
+        
+            # === 合并每月三列，并设置标题 ===
+            col = 4  # 从第4列开始为预测数据
+            for ym in all_months:
                 ws.merge_cells(start_row=1, start_column=col, end_row=1, end_column=col + 2)
                 top_cell = ws.cell(row=1, column=col)
                 top_cell.value = ym
                 top_cell.alignment = Alignment(horizontal="center", vertical="center")
                 top_cell.font = Font(bold=True)
-
+        
                 ws.cell(row=2, column=col).value = "预测"
                 ws.cell(row=2, column=col + 1).value = "订单"
                 ws.cell(row=2, column=col + 2).value = "出货"
                 col += 3
+        
+            # === 自动列宽调整 ===
+            for col_idx, column_cells in enumerate(ws.columns, 1):
+                max_length = 0
+                for cell in column_cells:
+                    try:
+                        if cell.value:
+                            max_length = max(max_length, len(str(cell.value)))
+                    except:
+                        pass
+                ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 2
+
 
         output.seek(0)
         return main_df, output
