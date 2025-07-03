@@ -16,7 +16,7 @@ def main():
         template_df = load_file_with_github_fallback("template", template_file, sheet_name=0, header=1)
         forecast_df = load_file_with_github_fallback("forecast", forecast_file, sheet_name=0)
         order_df = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
-        sales_df = load_file_with_github_fallback("sales", sales_file, sheet_name="Sheet1")
+        sales_df = load_file_with_github_fallback("sales", sales_file, sheet_name="原表")
     
         processor = PivotProcessor()
         df_result, excel_output = processor.process(template_df, forecast_df, order_df, sales_df, mapping_file)
