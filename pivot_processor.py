@@ -8,7 +8,7 @@ from mapping_utils import (
     apply_mapping_and_merge, 
     apply_extended_substitute_mapping
 )
-from info_extract import extract_all_year_months, fill_forecast_data
+from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file):
