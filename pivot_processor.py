@@ -93,10 +93,12 @@ class PivotProcessor:
         st.write("📅 涉及月份：", all_months)
 
         # Step 4: 初始化列
-        for ym in forecast_months:
+        for ym in all_months:
             main_df[f"{ym}-预测"] = 0
             main_df[f"{ym}-订单"] = 0
             main_df[f"{ym}-出货"] = 0
+
+        st.write(main_df)
 
         # Step 5: 填入预测数据
         forecast_file["品名"] = forecast_file["生产料号"].astype(str).str.strip()
