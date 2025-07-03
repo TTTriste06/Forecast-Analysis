@@ -120,7 +120,7 @@ class PivotProcessor:
 
 
         # Step 3: 提取月份列
-        all_months = extract_all_year_months(df_forecast, df_order, df_sales)
+        all_months = extract_all_year_months(forecast_file, order_file, sales_file)
         st.write("📅 涉及月份：", all_months)
 
 
