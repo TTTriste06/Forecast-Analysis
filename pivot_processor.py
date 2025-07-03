@@ -11,7 +11,13 @@ from mapping_utils import (
     apply_extended_substitute_mapping,
     split_mapping_data
 )
-from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data, highlight_mismatch_by_column_pairs
+from info_extract import (
+    extract_all_year_months, 
+    fill_forecast_data, 
+    fill_order_data, 
+    fill_sales_data, 
+    highlight_forecast_vs_order_skipping
+)
 
 class PivotProcessor:
     def process(self, template_file, forecast_file, order_file, sales_file, mapping_file):
@@ -72,7 +78,7 @@ class PivotProcessor:
             main_df.to_excel(writer, index=False, sheet_name="预测分析", startrow=1)
             ws = writer.sheets["预测分析"]
 
-            highlight_mismatch_by_column_pairs(ws, 1)
+            highlight_forecast_vs_order_skipping(ws, start_col=4)
 
             # === 设置基本字段（三列）合并行 ===
             for i, label in enumerate(["晶圆品名", "规格", "品名"], start=1):
