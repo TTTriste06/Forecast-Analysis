@@ -62,11 +62,9 @@ class PivotProcessor:
 
         # Step 6: 填入订单数据
         main_df = fill_order_data(main_df, order_file, all_months)
-        st.write(main_df)
 
         # Step 7: 填入出货数据
         main_df = fill_sales_data(main_df, sales_file, all_months)
-        st.write(main_df)
         
         # Step 8: 输出 Excel
         output = BytesIO()
