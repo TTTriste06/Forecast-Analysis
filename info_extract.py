@@ -148,3 +148,47 @@ def fill_sales_data(main_df, df_sales, forecast_months):
 
     return main_df
 
+
+def highlight_forecast_without_order(ws, forecast_months: list[str]):
+    """
+    对于每个 forecast_month，若某行该月预测 > 0 且订单 = 0，则将这两个单元格标红。
+
+    参数：
+        ws: openpyxl 的 worksheet 对象
+        forecast_months: 月份列表（如 ['2024-06', '2024-07']）
+
+    要求：
+        - 每月的预测列为“6月预测”，订单列为“6月订单”
+        - 假设第2行是表头（即数据从第3行开始）
+    """
+    red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+
+    for month in forecast_months:
+        # 提取列名（如 6月预测 / 6月订单）
+        m = int(month.split("-")[1])
+        forecast_col_name = f"{m}月预测"
+        order_col_name = f"{m}月订单"
+
+        # 查找列索引
+        header = [cell.value for cell in ws[2]]
+        try:
+            col_forecast = header.index(forecast_col_name) + 1
+            col_order = header.index(order_col_name) + 1
+        except ValueError:
+            continue  # 当前月份字段不存在就跳过
+
+        for row in range(3, ws.max_row + 1):
+            cell_forecast = ws.cell(row=row, column=col_forecast)
+            cell_order = ws.cell(row=row, column=col_order)
+
+            try:
+                forecast_val = float(cell_forecast.value or 0)
+                order_val = float(cell_order.value or 0)
+            except ValueError:
+                continue
+
+            if forecast_val > 0 and order_val == 0:
+                cell_forecast.fill = red_fill
+                cell_order.fill = red_fill
+
+
