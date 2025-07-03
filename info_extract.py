@@ -151,16 +151,10 @@ def fill_sales_data(main_df, df_sales, forecast_months):
 
     return main_df
 
-from openpyxl.styles import PatternFill
-
 def highlight_forecast_vs_order_skipping(ws, start_col=4):
     """
-    每4列为一组：预测列 vs 订单列（如 D-E，G-H，J-K，M-N ...）
-    如果预测 > 0 且订单为 0，则标红这两个单元格。
-
-    参数：
-        ws: openpyxl worksheet 对象
-        start_col: 开始列（默认 D 列 = 4）
+    每4列为一组：预测 vs 订单（如 D-E, H-I, L-M...）
+    如果预测 > 0 且订单 = 0，则标红两个单元格，并打印比较信息。
     """
     red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
     max_col = ws.max_column
@@ -171,6 +165,8 @@ def highlight_forecast_vs_order_skipping(ws, start_col=4):
         forecast_col = col
         order_col = col + 1
 
+        st.write(f"🟡 正在比较列 {forecast_col} (预测) 与 {order_col} (订单)")
+
         for row in range(3, max_row + 1):
             cell_forecast = ws.cell(row=row, column=forecast_col)
             cell_order = ws.cell(row=row, column=order_col)
@@ -178,11 +174,15 @@ def highlight_forecast_vs_order_skipping(ws, start_col=4):
             try:
                 val_forecast = float(cell_forecast.value or 0)
                 val_order = float(cell_order.value or 0)
-            except:
+            except Exception as e:
+                st.write(f"❌ 第 {row} 行解析失败：{e}")
                 continue
 
+            st.write(f"行 {row} - 预测: {val_forecast}, 订单: {val_order}")
+
             if val_forecast > 0 and val_order == 0:
+                st.write(f"🔴 标红 -> 行 {row}, 列 {forecast_col} 与 {order_col}")
                 cell_forecast.fill = red_fill
                 cell_order.fill = red_fill
 
-        col += 3  # 每组跳过3列（预测、订单）
+        col += 4  # 每4列一组
