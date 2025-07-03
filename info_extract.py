@@ -152,38 +152,36 @@ def fill_sales_data(main_df, df_sales, forecast_months):
 
     return main_df
 
-def highlight_forecast_vs_order_skipping(ws, start_col=4):
+def highlight_by_detecting_column_headers(ws):
     """
-    每4列为一组：预测 vs 订单（如 D-E, H-I, L-M...）
-    如果预测 > 0 且订单 = 0，则标红两个单元格，并打印比较信息。
+    自动识别表头第二行中连续的“预测/订单”列对，并对值为：预测>0且订单=0 的单元格标红。
     """
     red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
     max_col = ws.max_column
     max_row = ws.max_row
 
-    col = start_col
-    while col + 1 <= max_col:
-        forecast_col = col
-        order_col = col + 1
+    header = [cell.value for cell in ws[2]]
 
-        st.write(f"🟡 正在比较列 {forecast_col} (预测) 与 {order_col} (订单)")
+    # 遍历所有列找出“预测-订单”成对列索引
+    column_pairs = []
+    for i in range(len(header) - 1):
+        name1 = str(header[i]).strip()
+        name2 = str(header[i + 1]).strip()
+        if name1.endswith("预测") and name2.endswith("订单"):
+            column_pairs.append((i + 1, i + 2))  # openpyxl列从1开始
 
-        for row in range(3, max_row + 1):
+    # 遍历每行，检查成对列
+    for row in range(3, ws.max_row + 1):
+        for forecast_col, order_col in column_pairs:
             cell_forecast = ws.cell(row=row, column=forecast_col)
             cell_order = ws.cell(row=row, column=order_col)
 
             try:
                 val_forecast = float(cell_forecast.value or 0)
                 val_order = float(cell_order.value or 0)
-            except Exception as e:
-                st.write(f"❌ 第 {row} 行解析失败：{e}")
+            except:
                 continue
 
-            st.write(f"行 {row} - 预测: {val_forecast}, 订单: {val_order}")
-
             if val_forecast > 0 and val_order == 0:
-                st.write(f"🔴 标红 -> 行 {row}, 列 {forecast_col} 与 {order_col}")
                 cell_forecast.fill = red_fill
                 cell_order.fill = red_fill
-
-        col += 4  # 每4列一组
