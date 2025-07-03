@@ -13,19 +13,22 @@ from mapping_utils import (
 from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data
 
 class PivotProcessor:
-    def process(self, template_file, forecast_file, order_file, sales_file):
-        
-        # 🔗 构建 raw URL，确保路径中文被编码
-        raw_mapping_url = (
-            "https://raw.githubusercontent.com/TTTriste06/operation_planning-/main/"
-            + quote("新旧料号.xlsx")
-        )
+    def process(self, template_file, forecast_file, order_file, sales_file, mapping_file):
 
-        # 📥 尝试加载
-        try:
-            mapping_df = pd.read_excel(raw_mapping_url)
-        except Exception as e:
-            raise ValueError(f"❌ 加载新旧料号映射表失败：{e}")
+        if mapping_file is None:
+            # 🔗 构建 raw URL，确保路径中文被编码
+            raw_mapping_url = (
+                "https://raw.githubusercontent.com/TTTriste06/operation_planning-/main/"
+                + quote("新旧料号.xlsx")
+            )
+    
+            # 📥 尝试加载
+            try:
+                mapping_df = pd.read_excel(raw_mapping_url)
+            except Exception as e:
+                raise ValueError(f"❌ 加载新旧料号映射表失败：{e}")
+        else:
+            mapping_df = pd.read_excel(mapping_file)
 
         # 创建新的 mapping_semi：仅保留“半成品”字段非空的行
         mapping_semi1 = mapping_df[
