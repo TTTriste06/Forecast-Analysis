@@ -144,7 +144,7 @@ class PivotProcessor:
                             max_length = max(max_length, len(str(cell.value)))
                     except:
                         pass
-                ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 2
+                ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 10
 
 
         output.seek(0)
