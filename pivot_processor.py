@@ -8,7 +8,8 @@ from openpyxl.utils import get_column_letter
 from urllib.parse import quote
 from mapping_utils import (
     apply_mapping_and_merge, 
-    apply_extended_substitute_mapping
+    apply_extended_substitute_mapping,
+    split_mapping_data
 )
 from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data
 
@@ -29,58 +30,19 @@ class PivotProcessor:
                 raise ValueError(f"❌ 加载新旧料号映射表失败：{e}")
         else:
             mapping_df = pd.read_excel(mapping_file)
-
-        # 创建新的 mapping_semi：仅保留“半成品”字段非空的行
-        mapping_semi1 = mapping_df[
-            ["新晶圆", "新规格", "新品名", "半成品"]
-        ]
-        mapping_semi1 = mapping_semi1[~mapping_df["半成品"].astype(str).str.strip().replace("nan", "").eq("")].copy()
-        mapping_semi1 = mapping_semi1[~mapping_df["新品名"].astype(str).str.strip().replace("nan", "").eq("")].copy()
-        mapping_semi2 = mapping_df[
-            ["新晶圆", "新规格", "新品名", "旧晶圆", "旧规格", "旧品名", "半成品"]
-        ]
-        mapping_semi2 = mapping_semi2[mapping_semi2["新品名"].astype(str).str.strip().replace("nan", "") == ""].copy()
-        mapping_semi2 = mapping_semi2[~mapping_semi2["半成品"].astype(str).str.strip().replace("nan", "").eq("")].copy()
-        mapping_semi2 = mapping_semi2[~mapping_semi2["旧品名"].astype(str).str.strip().replace("nan", "").eq("")].copy()
-        mapping_semi2 = mapping_semi2.drop(columns=["新晶圆", "新规格", "新品名"])
-        mapping_semi2.columns = ["新晶圆", "新规格", "新品名", "半成品"]
-        
-        mapping_semi = pd.concat([mapping_semi1, mapping_semi2], ignore_index=True)
-       
-        # 去除“品名”为空的行
-        mapping_new = mapping_df[
-            ["旧晶圆", "旧规格", "旧品名", "新晶圆", "新规格", "新品名"]
-        ]
-        mapping_new = mapping_new[~mapping_df["新品名"].astype(str).str.strip().replace("nan", "").eq("")].copy()
-        mapping_new = mapping_new[~mapping_new["旧品名"].astype(str).str.strip().replace("nan", "").eq("")].copy()
-        
-        
-        # 去除“替代品名”为空的行，并保留指定字段
-        mapping_sub = pd.DataFrame()
-        for i in range(1, 5):
-            sub_cols = ["新晶圆", "新规格", "新品名", f"替代晶圆{i}", f"替代规格{i}", f"替代品名{i}"]
-            sub_df = mapping_df[sub_cols].copy()
-            
-            # 去除“替代品名”为空或为 nan 的行
-            valid_mask = ~sub_df[f"替代品名{i}"].astype(str).str.strip().replace("nan", "").eq("")
-            sub_df = sub_df[valid_mask].copy()
-        
-            # 统一列名
-            sub_df.columns = ["新晶圆", "新规格", "新品名", "替代晶圆", "替代规格", "替代品名"]
-            mapping_sub = pd.concat([mapping_sub, sub_df], ignore_index=True)
+        mapping_semi, mapping_new, mapping_sub = split_mapping_data(mapping_df)
 
 
         # Step 1: 读取主计划模板
         main_df = template_file[["晶圆", "规格", "品名"]].copy()
         main_df.columns = ["晶圆品名", "规格", "品名"]
         
+        # Step 2: 进行新旧料号替换 
         FIELD_MAPPINGS = {
             "forecast": {"品名": "生产料号"},
             "order": {"品名": "品名"},
             "sales": {"品名": "品名"}
         }
-
-        # Step 2: 进行新旧料号替换 
         all_replaced_names = set()
         for df, key in zip([forecast_file, order_file, sales_file], ["forecast", "order", "sales"]):
             df, replaced_main = apply_mapping_and_merge(df, mapping_df, FIELD_MAPPINGS[key])
