@@ -101,17 +101,11 @@ class PivotProcessor:
 
         # Step 6: 填入订单数据
         main_df = fill_order_data(main_df, order_file, all_months)
-        st.write(main_df)
 
         # Step 7: 填入出货数据
-        df_sales["交易日期"] = pd.to_datetime(df_sales["交易日期"], errors="coerce")
-        df_sales["年月"] = df_sales["交易日期"].dt.to_period("M").astype(str)
-        grouped_sales = df_sales.groupby(["品名", "年月"])["数量"].sum().unstack().fillna(0)
-        for ym in grouped_sales.columns:
-            colname = f"{ym}-出货"
-            if colname in main_df.columns:
-                main_df[colname] = main_df["品名"].map(grouped_sales[ym]).fillna(0)
-
+        main_df = fill_sales_data(main_df, sales_file, all_months)
+        st.write(main_df)
+        
         # Step 8: 输出 Excel
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
