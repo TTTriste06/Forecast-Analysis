@@ -99,7 +99,7 @@ def fill_order_data(main_df, df_order, forecast_months):
 
     # 确保日期字段为 datetime 类型
     df_order["客户要求交期"] = pd.to_datetime(df_order["客户要求交期"], errors="coerce")
-    df_order["年月"] = df_order["订单日期"].dt.to_period("M").astype(str)
+    df_order["年月"] = df_order["客户要求交期"].dt.to_period("M").astype(str)
 
     # 数值字段清洗
     df_order["未交订单数量"] = pd.to_numeric(df_order["未交订单数量"], errors="coerce").fillna(0)
