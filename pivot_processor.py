@@ -48,12 +48,20 @@ class PivotProcessor:
             "order": {"品名": "品名"},
             "sales": {"品名": "品名"}
         }
+        st.write(forecast_file)
+        st.write(order_file)
+        st.write(sales_file)
+        
         all_replaced_names = set()
         for df, key in zip([forecast_file, order_file, sales_file], ["forecast", "order", "sales"]):
             df, replaced_main = apply_mapping_and_merge(df, mapping_df, FIELD_MAPPINGS[key])
             all_replaced_names.update(replaced_main)
             df, replaced_sub = apply_extended_substitute_mapping(df, mapping_df, FIELD_MAPPINGS[key])
             all_replaced_names.update(replaced_sub)
+
+        st.write(forecast_file)
+        st.write(order_file)
+        st.write(sales_file)
 
         # Step 3: 提取月份列
         all_months = extract_all_year_months(forecast_file, order_file, sales_file)
