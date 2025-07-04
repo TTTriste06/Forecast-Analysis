@@ -53,12 +53,12 @@ class PivotProcessor:
         st.write(mapping_sub)
         
         
-        forecast_file, replaced_main = apply_mapping_and_merge(forecast_file, mapping_new, FIELD_MAPPINGS[key])
-        forecast_file, replaced_sub = apply_extended_substitute_mapping(forecast_file, mapping_sub, FIELD_MAPPINGS[key])
-        order_file, replaced_main = apply_mapping_and_merge(order_file, mapping_new, FIELD_MAPPINGS[key])
-        order_file, replaced_sub = apply_extended_substitute_mapping(order_file, mapping_sub, FIELD_MAPPINGS[key])
-        sales_file, replaced_main = apply_mapping_and_merge(sales_file, mapping_new, FIELD_MAPPINGS[key])
-        sales_file, replaced_sub = apply_extended_substitute_mapping(sales_file, mapping_sub, FIELD_MAPPINGS[key])
+        forecast_file, replaced_main = apply_mapping_and_merge(forecast_file, mapping_new, FIELD_MAPPINGS["forecast"])
+        forecast_file, replaced_sub = apply_extended_substitute_mapping(forecast_file, mapping_sub, FIELD_MAPPINGS["forecast"])
+        order_file, replaced_main = apply_mapping_and_merge(order_file, mapping_new, FIELD_MAPPINGS["order"])
+        order_file, replaced_sub = apply_extended_substitute_mapping(order_file, mapping_sub, FIELD_MAPPINGS["order"])
+        sales_file, replaced_main = apply_mapping_and_merge(sales_file, mapping_new, FIELD_MAPPINGS["sales"])
+        sales_file, replaced_sub = apply_extended_substitute_mapping(sales_file, mapping_sub, FIELD_MAPPINGS["sales"])
 
 
         st.write(forecast_file)
