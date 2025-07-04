@@ -102,11 +102,11 @@ def fill_order_data(main_df, df_order, forecast_months):
     df_order["年月"] = df_order["客户要求交期"].dt.to_period("M").astype(str)
 
     # 数值字段清洗
-    df_order["未交订单数量"] = pd.to_numeric(df_order["未交订单数量"], errors="coerce").fillna(0)
+    df_order["订单数量"] = pd.to_numeric(df_order["订单数量"], errors="coerce").fillna(0)
 
     # 聚合出每品名每月的订单量
     grouped = (
-        df_order.groupby(["品名", "年月"])["未交订单数量"]
+        df_order.groupby(["品名", "年月"])["订单数量"]
         .sum()
         .unstack()
         .fillna(0)
