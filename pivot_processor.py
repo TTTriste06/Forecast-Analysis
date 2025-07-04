@@ -48,9 +48,9 @@ class PivotProcessor:
             "order": {"品名": "品名"},
             "sales": {"品名": "品名"}
         }
-        st.write(forecast_file)
-        st.write(order_file)
-        st.write(sales_file)
+        st.write(mapping_semi)
+        st.write(mapping_new)
+        st.write(mapping_sub)
         
         all_replaced_names = set()
         for df, key in zip([forecast_file, order_file, sales_file], ["forecast", "order", "sales"]):
