@@ -48,10 +48,6 @@ class PivotProcessor:
             "order": {"品名": "品名"},
             "sales": {"品名": "品名"}
         }
-        st.write(mapping_semi)
-        st.write(mapping_new)
-        st.write(mapping_sub)
-        
         
         forecast_file, replaced_main = apply_mapping_and_merge(forecast_file, mapping_new, FIELD_MAPPINGS["forecast"])
         forecast_file, replaced_sub = apply_extended_substitute_mapping(forecast_file, mapping_sub, FIELD_MAPPINGS["forecast"])
@@ -59,11 +55,6 @@ class PivotProcessor:
         order_file, replaced_sub = apply_extended_substitute_mapping(order_file, mapping_sub, FIELD_MAPPINGS["order"])
         sales_file, replaced_main = apply_mapping_and_merge(sales_file, mapping_new, FIELD_MAPPINGS["sales"])
         sales_file, replaced_sub = apply_extended_substitute_mapping(sales_file, mapping_sub, FIELD_MAPPINGS["sales"])
-
-
-        st.write(forecast_file)
-        st.write(order_file)
-        st.write(sales_file)
 
         # Step 3: 提取月份列
         all_months = extract_all_year_months(forecast_file, order_file, sales_file)
