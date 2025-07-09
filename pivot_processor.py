@@ -66,7 +66,7 @@ class PivotProcessor:
             main_df[f"{ym}-出货"] = 0
 
         # Step 5: 填入预测数据
-        main_df = fill_forecast_data(main_df, forecast_file, all_months)
+        main_df = fill_forecast_data(main_df, forecast_file)
 
         # Step 6: 填入订单数据
         main_df = fill_order_data(main_df, order_file, all_months)
