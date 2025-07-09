@@ -6,6 +6,7 @@ from ui import get_uploaded_files
 from pivot_processor import PivotProcessor
 from github_utils import load_file_with_github_fallback
 from choose_utils import show_raw_data_filter_ui
+from info_extract import extract_all_year_months
 
 def main():
     st.set_page_config(page_title="预测分析主计划工具", layout="wide")
