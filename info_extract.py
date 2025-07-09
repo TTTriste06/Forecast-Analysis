@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 import streamlit as st
+from datetime import datetime
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 
@@ -54,36 +55,41 @@ def extract_all_year_months(df_forecast, df_order, df_sales):
     
     return full_months
 
-def fill_forecast_data(main_df, df_forecast, forecast_months):
+def fill_forecast_data(main_df: pd.DataFrame, df_forecast: pd.DataFrame) -> pd.DataFrame:
     """
-    从 forecast_file 填入预测数据，按生产料号对应品名，支持月份列为“6月预测”格式。
+    从 df_forecast 中提取“生产料号”作为品名，解析“x月预测”列，填入 main_df 中“yyyy-mm-预测”字段。
+    默认使用当前年份。
     """
-    # 清洗生产料号 → 品名
+    # 使用当前年份
+    current_year = datetime.today().year
+
+    # 统一格式处理
     df_forecast["生产料号"] = df_forecast["生产料号"].astype(str).str.strip()
     df_forecast["品名"] = df_forecast["生产料号"]
 
     # 正则提取“x月预测”字段
-    month_pattern = re.compile(r"(\d{1,2})月预测")
+    month_pattern = re.compile(r"^\s*(\d{1,2})月\s*预测\s*$")
     forecast_cols = {
-        f"2025-{match.group(1).zfill(2)}": col
+        f"{current_year}-{match.group(1).zfill(2)}": col
         for col in df_forecast.columns
         if (match := month_pattern.match(str(col)))
     }
 
-    for ym in forecast_months:
-        colname = f"{ym}-预测"
-        if colname in main_df.columns and ym in forecast_cols:
-            month_col = forecast_cols[ym]
+    for ym, month_col in forecast_cols.items():
+        target_col = f"{ym}-预测"
+        if target_col not in main_df.columns:
+            main_df[target_col] = 0  # 若不存在则新建
 
-            # ✅ 按品名汇总（避免重复索引）
-            forecast_series = (
-                df_forecast.groupby("品名")[month_col]
-                .sum(min_count=1)
-            )
+        # 按“品名”聚合预测数据并写入
+        forecast_series = (
+            df_forecast.groupby("品名")[month_col]
+            .sum(min_count=1)
+        )
 
-            main_df[colname] = main_df["品名"].map(forecast_series).fillna(0)
+        main_df[target_col] = main_df["品名"].map(forecast_series).fillna(0)
 
     return main_df
+
 
 
 def fill_order_data(main_df, df_order, forecast_months):
