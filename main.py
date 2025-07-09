@@ -14,7 +14,7 @@ def main():
     
     if start:    
         template_df = load_file_with_github_fallback("template", template_file, sheet_name=0, header=1)
-        forecast_df = load_file_with_github_fallback("forecast", forecast_file, sheet_name=0)
+        forecast_df = load_file_with_github_fallback("forecast", forecast_file, sheet_name="预测")
         order_df = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
         sales_df = load_file_with_github_fallback("sales", sales_file, sheet_name="原表")
     
