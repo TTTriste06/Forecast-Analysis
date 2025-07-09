@@ -106,7 +106,7 @@ class PivotProcessor:
                     for dtype in ["预测", "订单", "出货"]:
                         val = ws.cell(row=row_idx, column=col_ptr).value
                         if val not in [None, "", 0]:
-                            link_cell = f'=HYPERLINK("#\'数据来源\'!A1", "{val}")'
+                            link_cell = f'=HYPERLINK("#'数据来源'!A1", "{val}")'
                             ws.cell(row=row_idx, column=col_ptr).value = link_cell
                         col_ptr += 1
 
@@ -121,6 +121,10 @@ class PivotProcessor:
                 ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 10
 
             source_rows = []
+            highlight_forecast = set()
+            highlight_order = set()
+            highlight_sales = set()
+
             for (name, ym, dtype), entries in self.source_map.items():
                 for e in entries:
                     source_rows.append({
@@ -131,8 +135,28 @@ class PivotProcessor:
                         "来源行号": e["来源行号"],
                         "字段值": e["字段值"]
                     })
+                    if e["来源sheet"] == "原始预测":
+                        highlight_forecast.add(e["来源索引"])
+                    elif e["来源sheet"] == "原始订单":
+                        highlight_order.add(e["来源索引"])
+                    elif e["来源sheet"] == "原始出货":
+                        highlight_sales.add(e["来源索引"])
+
             df_source = pd.DataFrame(source_rows)
             df_source.to_excel(writer, sheet_name="数据来源", index=False)
+
+            def write_original_sheet(writer, df, sheet_name, highlight_rows):
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+                ws = writer.sheets[sheet_name]
+                ws.auto_filter.ref = ws.dimensions
+                yellow = PatternFill(start_color="FFFF99", end_color="FFFF99", fill_type="solid")
+                for idx in highlight_rows:
+                    for col in range(1, ws.max_column + 1):
+                        ws.cell(row=idx + 2, column=col).fill = yellow
+
+            write_original_sheet(writer, forecast_file, "原始预测", highlight_forecast)
+            write_original_sheet(writer, order_file, "原始订单", highlight_order)
+            write_original_sheet(writer, sales_file, "原始出货", highlight_sales)
 
         output.seek(0)
         return main_df, output
