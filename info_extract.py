@@ -54,7 +54,6 @@ def extract_all_year_months(df_forecast, df_order, df_sales):
     
     return full_months
 
-
 def fill_forecast_data(main_df, df_forecast, forecast_months, source_map=None):
     df_forecast["生产料号"] = df_forecast["生产料号"].astype(str).str.strip()
     df_forecast["品名"] = df_forecast["生产料号"]
@@ -81,7 +80,9 @@ def fill_forecast_data(main_df, df_forecast, forecast_months, source_map=None):
                         source_map[(name, ym, "预测")].append({
                             "来源": "forecast",
                             "来源行号": idx + 2,
-                            "字段值": val
+                            "字段值": val,
+                            "来源索引": idx,
+                            "来源sheet": "原始预测"
                         })
     return main_df
 
@@ -107,7 +108,9 @@ def fill_order_data(main_df, df_order, forecast_months, source_map=None):
                 source_map[(name, ym, "订单")].append({
                     "来源": "order",
                     "来源行号": idx + 2,
-                    "字段值": val
+                    "字段值": val,
+                    "来源索引": idx,
+                    "来源sheet": "原始订单"
                 })
     return main_df
 
@@ -133,7 +136,9 @@ def fill_sales_data(main_df, df_sales, forecast_months, source_map=None):
                 source_map[(name, ym, "出货")].append({
                     "来源": "sales",
                     "来源行号": idx + 2,
-                    "字段值": val
+                    "字段值": val,
+                    "来源索引": idx,
+                    "来源sheet": "原始出货"
                 })
     return main_df
 
