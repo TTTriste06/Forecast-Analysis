@@ -133,5 +133,11 @@ class PivotProcessor:
                         pass
                 ws.column_dimensions[get_column_letter(col_idx)].width = max_length + 10
 
+            # 添加三张原始表
+            forecast_file.to_excel(writer, index=False, sheet_name="原始-预测")
+            order_file.to_excel(writer, index=False, sheet_name="原始-订单")
+            sales_file.to_excel(writer, index=False, sheet_name="原始-出货")
+
+
         output.seek(0)
         return main_df, output
