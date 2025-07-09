@@ -1,4 +1,4 @@
-import pandas as pd
+dimport pandas as pd
 import re
 from io import BytesIO
 import streamlit as st
@@ -19,8 +19,11 @@ from info_extract import (
     fill_sales_data, 
     highlight_by_detecting_column_headers
 )
+from collections import defaultdict
 
 class PivotProcessor:
+    def __init__(self):
+        self.source_map = defaultdict(list)
     def process(self, template_file, forecast_file, order_file, sales_file, mapping_file):
         if mapping_file is None:
             # 🔗 构建 raw URL，确保路径中文被编码
