@@ -106,7 +106,7 @@ class PivotProcessor:
                     for dtype in ["预测", "订单", "出货"]:
                         val = ws.cell(row=row_idx, column=col_ptr).value
                         if val not in [None, "", 0]:
-                            link_cell = f'=HYPERLINK("#'数据来源'!A1", "{val}")'
+                            link_cell = f"=HYPERLINK(\"#'数据来源'!A1\", \"{val}\")"
                             ws.cell(row=row_idx, column=col_ptr).value = link_cell
                         col_ptr += 1
 
