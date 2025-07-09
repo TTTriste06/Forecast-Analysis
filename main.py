@@ -5,6 +5,7 @@ from io import BytesIO
 from ui import get_uploaded_files
 from pivot_processor import PivotProcessor
 from github_utils import load_file_with_github_fallback
+from choose_utils import show_raw_data_filter_ui
 
 def main():
     st.set_page_config(page_title="预测分析主计划工具", layout="wide")
@@ -19,7 +20,17 @@ def main():
         sales_df = load_file_with_github_fallback("sales", sales_file, sheet_name="原表")
     
         processor = PivotProcessor()
+
+        # 调用 PivotProcessor
         df_result, excel_output = processor.process(template_df, forecast_df, order_df, sales_df, mapping_file)
+        
+        # 显示可视化界面
+        st.success("✅ 主计划已生成。您可预览分析结果或查看原始数据来源。")
+        
+        # 添加原始数据筛选界面
+        forecast_months = extract_all_year_months(forecast_df, order_df, sales_df)
+        show_raw_data_filter_ui(forecast_df, order_df, sales_df, forecast_months)
+
     
         st.success("✅ 主计划生成成功！")
         st.dataframe(df_result, use_container_width=True)
