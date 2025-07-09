@@ -54,25 +54,6 @@ def extract_all_year_months(df_forecast, df_order, df_sales):
     
     return full_months
 
-import pandas as pd
-import re
-from io import BytesIO
-import streamlit as st
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
-from openpyxl import load_workbook
-from urllib.parse import quote
-from collections import defaultdict
-
-from mapping_utils import (
-    apply_mapping_and_merge, 
-    apply_extended_substitute_mapping,
-    split_mapping_data
-)
-from info_extract import (
-    extract_all_year_months, 
-    highlight_by_detecting_column_headers
-)
 
 def fill_forecast_data(main_df, df_forecast, forecast_months, source_map=None):
     df_forecast["生产料号"] = df_forecast["生产料号"].astype(str).str.strip()
