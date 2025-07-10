@@ -97,7 +97,7 @@ class PivotProcessor:
             sales_file.to_excel(writer, index=False, sheet_name="原始-出货")
 
             # 添加跳转超链接和明细 Sheet
-            self.add_detail_link_and_sheets(
+            add_detail_link_and_sheets(
                 wb=wb,
                 ws_main=ws,
                 df_order=order_file,
