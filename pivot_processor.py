@@ -137,7 +137,11 @@ class PivotProcessor:
                         sheet_name = f"{base_name[:27]}-{suffix}"
                         suffix += 1
 
-                    cell.hyperlink = f"#'{sheet_name}'!A1"
+                    internalLink = sheet.HyperLinks.Add(cell)
+                    internalLink.Type = HyperLinkType.Workbook
+                    internalLink.TextToDisplay = val
+                    internalLink.Address = "{sheet_name}!A1"
+
                     cell.font = Font(underline="single", color="0000FF")
 
                     created_sheets.add(sheet_name)
