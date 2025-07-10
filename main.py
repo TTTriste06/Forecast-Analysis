@@ -17,9 +17,10 @@ def main():
         forecast_df = load_file_with_github_fallback("forecast", forecast_file, sheet_name="预测")
         order_df = load_file_with_github_fallback("order", order_file, sheet_name="Sheet")
         sales_df = load_file_with_github_fallback("sales", sales_file, sheet_name="原表")
+        mapping_df = load_file_with_github_fallback("mapping", mapping_file, sheet_name=0)
     
         processor = PivotProcessor()
-        df_result, excel_output = processor.process(template_df, forecast_df, order_df, sales_df, mapping_file)
+        df_result, excel_output = processor.process(template_df, forecast_df, order_df, sales_df, mapping_df)
     
         st.success("✅ 主计划生成成功！")
         st.dataframe(df_result, use_container_width=True)
