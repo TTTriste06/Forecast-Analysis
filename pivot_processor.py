@@ -11,6 +11,7 @@ from mapping_utils import (
     clean_mapping_headers,
     apply_mapping_and_merge, 
     apply_extended_substitute_mapping,
+    replace_all_names_with_mapping,
     split_mapping_data
 )
 from info_extract import (
