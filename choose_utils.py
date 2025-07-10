@@ -1,71 +1,80 @@
-import streamlit as st
+import re
+from openpyxl import load_workbook
 import pandas as pd
-import io
-from datetime import datetime
 
-def show_raw_data_filter_ui(forecast_file, order_file, sales_file, forecast_months):
-    st.markdown("### 🔍 按品名 + 月份查看原始数据")
+def extract_detail_from_click(
+    file_path: str,
+    summary_sheet: str,
+    raw_sheet: str,
+    clicked_cell: str,
+    item_col_letter: str = "B",
+    header_row: int = 2,
+    output_path: str = None
+) -> str:
+    """
+    根据点击的主计划单元格，从原始表中提取匹配数据，并生成新的工作表。
 
-    # 品名集合：来自三张表中字段
-    all_names = sorted(
-        set(forecast_file["生产料号"].dropna().astype(str)) |
-        set(order_file["品名"].dropna().astype(str)) |
-        set(sales_file["品名"].dropna().astype(str))
-    )
+    参数:
+        file_path: 主计划 Excel 文件路径
+        summary_sheet: 主计划 sheet 名称
+        raw_sheet: 原始数据 sheet 名称（如“销售明细”、“未交订单”等）
+        clicked_cell: 用户点击的单元格地址（如 "F5"）
+        item_col_letter: 主计划表中“品名”列（默认是 B）
+        header_row: 主计划表头所在行（默认是第2行）
+        output_path: 可选，另存为路径（默认覆盖原文件）
 
-    selected_name = st.selectbox("📦 选择品名", all_names)
-    selected_month = st.selectbox("📅 选择月份", forecast_months)
+    返回:
+        新 sheet 名称或错误信息
+    """
 
-    # 时间范围
-    month_start = pd.to_datetime(f"{selected_month}-01")
-    month_end = month_start + pd.offsets.MonthEnd(0)
+    wb = load_workbook(file_path)
+    ws_summary = wb[summary_sheet]
+    ws_raw = wb[raw_sheet]
 
-    # 过滤预测（仅按品名）
-    df_forecast_filtered = forecast_file[forecast_file["生产料号"] == selected_name]
+    row = ws_summary[clicked_cell].row
+    col = ws_summary[clicked_cell].column
 
-    # 过滤订单（品名 + 客户要求交期）
-    df_order_filtered = order_file.copy()
-    if "客户要求交期" in df_order_filtered.columns:
-        df_order_filtered["客户要求交期"] = pd.to_datetime(df_order_filtered["客户要求交期"], errors="coerce")
-        df_order_filtered = df_order_filtered[
-            (df_order_filtered["品名"] == selected_name) &
-            (df_order_filtered["客户要求交期"].between(month_start, month_end))
-        ]
-    else:
-        df_order_filtered = pd.DataFrame(columns=order_file.columns)  # 空表防报错
+    item = ws_summary[f"{item_col_letter}{row}"].value
+    month_field = ws_summary.cell(header_row, col).value
 
-    # 过滤出货（品名 + 交易日期）
-    df_sales_filtered = sales_file.copy()
-    if "交易日期" in df_sales_filtered.columns:
-        df_sales_filtered["交易日期"] = pd.to_datetime(df_sales_filtered["交易日期"], errors="coerce")
-        df_sales_filtered = df_sales_filtered[
-            (df_sales_filtered["品名"] == selected_name) &
-            (df_sales_filtered["交易日期"].between(month_start, month_end))
-        ]
-    else:
-        df_sales_filtered = pd.DataFrame(columns=sales_file.columns)
+    if not item or not month_field:
+        return f"❌ 无效点击位置，未获取品名或字段"
 
-    # 显示结果
-    st.subheader("📈 预测数据")
-    st.dataframe(df_forecast_filtered, use_container_width=True)
+    match = re.match(r"(\\d{4})[-年]?(\\d{1,2})[^\\d]*(预测|订单|销售)", str(month_field))
+    if not match:
+        return f"❌ 无法解析字段格式：{month_field}"
 
-    st.subheader("📦 订单数据")
-    st.dataframe(df_order_filtered, use_container_width=True)
+    year, month, category = match.groups()
+    month = month.zfill(2)
+    target_year_month = f"{year}-{month}"
 
-    st.subheader("🚚 出货数据")
-    st.dataframe(df_sales_filtered, use_container_width=True)
+    # 原始表转为 DataFrame
+    data = list(ws_raw.values)
+    columns = data[0]
+    df_raw = pd.DataFrame(data[1:], columns=columns)
 
-    # 下载按钮
-    buffer = io.BytesIO()
-    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        df_forecast_filtered.to_excel(writer, index=False, sheet_name="预测")
-        df_order_filtered.to_excel(writer, index=False, sheet_name="订单")
-        df_sales_filtered.to_excel(writer, index=False, sheet_name="出货")
-    buffer.seek(0)
+    if "品名" not in df_raw.columns or "日期" not in df_raw.columns:
+        return f"❌ 原始表缺少 '品名' 或 '日期' 字段"
 
-    st.download_button(
-        "📥 下载该品名原始记录",
-        data=buffer,
-        file_name=f"{selected_name}_{selected_month}_原始记录.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    df_raw = df_raw[df_raw["品名"] == item].copy()
+    df_raw["日期"] = pd.to_datetime(df_raw["日期"], errors="coerce")
+    df_raw = df_raw[df_raw["日期"].dt.strftime("%Y-%m") == target_year_month]
+
+    if df_raw.empty:
+        return f"⚠️ 未找到匹配数据：{item} - {target_year_month}"
+
+    # 写入新工作表
+    new_sheet = f"原始-{item}-{target_year_month}"
+    if new_sheet in wb.sheetnames:
+        del wb[new_sheet]
+    ws_new = wb.create_sheet(title=new_sheet)
+
+    for r_idx, row in enumerate([df_raw.columns.tolist()] + df_raw.values.tolist(), 1):
+        for c_idx, val in enumerate(row, 1):
+            ws_new.cell(row=r_idx, column=c_idx, value=val)
+
+    # 保存文件
+    output_path = output_path or file_path
+    wb.save(output_path)
+
+    return f"✅ 已写入：{new_sheet}（保存为：{output_path}）"
