@@ -84,7 +84,7 @@ def load_file_with_github_fallback(file_key, uploaded_file, sheet_name=0, header
     }
 
     if uploaded_file is not None:
-        return pd.read_excel(uploaded_file, header=header, engine="openpyxl")
+        return pd.read_excel(uploaded_file, sheet_name = sheet_name, header=header, engine="openpyxl")
     
     # fallback 读取
     if file_key not in fallback_urls:
@@ -97,6 +97,6 @@ def load_file_with_github_fallback(file_key, uploaded_file, sheet_name=0, header
     
     content = response.content
     try:
-        return pd.read_excel(BytesIO(content), header=header, engine="openpyxl")
+        return pd.read_excel(BytesIO(content), sheet_name = sheet_name, header=header, engine="openpyxl")
     except Exception as e:
         raise ValueError(f"❌ 无法读取 Excel 文件（可能不是 .xlsx 格式）：{e}")
