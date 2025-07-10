@@ -8,6 +8,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl import load_workbook
 from urllib.parse import quote
 from mapping_utils import (
+    clean_mapping_headers,
     apply_mapping_and_merge, 
     apply_extended_substitute_mapping,
     split_mapping_data
