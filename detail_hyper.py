@@ -27,7 +27,7 @@ def add_detail_link_and_sheets(wb, ws_main, df_order, df_sales, df_forecast, all
 
                 sheet_name = f"{prefix}-{item_name}-{ym}"
                 sheet_name = sheet_name[:31]  # Excel 限制
-                cell.hyperlink = HYPERLINK("#\'{sheet_name}\'!A1", "{cell.value}")'
+                cell.hyperlink = f"#'{sheet_name}'!A1"
 
                 cell.font = Font(underline="single", color="0000FF")
 
