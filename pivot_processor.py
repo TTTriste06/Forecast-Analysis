@@ -3,7 +3,6 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils.dataframe import dataframe_to_rows
 from io import BytesIO
-from detail_hyper import add_detail_link_and_sheets
 
 class PivotProcessor:
     def process(self, template_df, forecast_file, order_file, sales_file, mapping_file):
@@ -97,7 +96,7 @@ class PivotProcessor:
             sales_file.to_excel(writer, index=False, sheet_name="原始-出货")
 
             # 添加跳转超链接和明细 Sheet
-            add_detail_link_and_sheets(
+            self.add_detail_link_and_sheets(
                 wb=wb,
                 ws_main=ws,
                 df_order=order_file,
@@ -108,3 +107,55 @@ class PivotProcessor:
 
         output.seek(0)
         return main_df, output
+
+    def add_detail_link_and_sheets(self, wb, ws_main, df_order, df_sales, df_forecast, all_months):
+        created_sheets = set()
+
+        for row in range(3, ws_main.max_row + 1):
+            item_name = ws_main.cell(row=row, column=3).value
+            for i, ym in enumerate(all_months):
+                for offset, df, date_col, value_col, prefix in [
+                    (0, df_forecast, None, f"{ym}-预测", "预测"),
+                    (1, df_order, "客户要求交期", "订单数量", "订单"),
+                    (2, df_sales, "交易日期", "数量", "出货"),
+                ]:
+                    col = 4 + i * 3 + offset
+                    cell = ws_main.cell(row=row, column=col)
+                    val = cell.value
+                    if not val or float(val) == 0:
+                        continue
+
+                    raw_name = f"{prefix}-{ym}-{item_name}"
+                    sheet_name = raw_name[:31]
+                    suffix = 1
+                    while sheet_name in created_sheets:
+                        sheet_name = f"{raw_name[:27]}-{suffix}"
+                        suffix += 1
+
+                    cell.hyperlink = f"#'{sheet_name}'!A1"
+                    cell.font = Font(underline="single", color="0000FF")
+
+                    created_sheets.add(sheet_name)
+
+                    if prefix == "预测":
+                        month_pattern = f"{int(ym[-2:])}月预测"
+                        if month_pattern in df.columns:
+                            df_filtered = df[df["生产料号"] == item_name][["生产料号", month_pattern]]
+                        else:
+                            df_filtered = pd.DataFrame()
+                    else:
+                        df_temp = df.copy()
+                        if date_col in df_temp.columns:
+                            df_temp[date_col] = pd.to_datetime(df_temp[date_col], errors="coerce")
+                            df_temp["年月"] = df_temp[date_col].dt.to_period("M").astype(str)
+                            df_filtered = df_temp[(df_temp["品名"] == item_name) & (df_temp["年月"] == ym)]
+                        else:
+                            df_filtered = pd.DataFrame()
+
+                    ws_detail = wb.create_sheet(sheet_name)
+                    if not df_filtered.empty:
+                        for r_idx, row_data in enumerate(dataframe_to_rows(df_filtered, index=False, header=True), start=1):
+                            for c_idx, val in enumerate(row_data, start=1):
+                                ws_detail.cell(row=r_idx, column=c_idx, value=val)
+                    else:
+                        ws_detail.cell(row=1, column=1, value="无匹配数据")
