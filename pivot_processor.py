@@ -10,7 +10,6 @@ class PivotProcessor:
         from mapping_utils import apply_mapping_and_merge, apply_extended_substitute_mapping, split_mapping_data
         from info_extract import extract_all_year_months, fill_forecast_data, fill_order_data, fill_sales_data, highlight_by_detecting_column_headers
 
-        mapping_df = pd.read_excel(mapping_file)
         mapping_semi, mapping_new, mapping_sub = split_mapping_data(mapping_df)
 
         main_df = template_df[["晶圆", "规格", "品名"]].copy()
