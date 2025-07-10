@@ -144,11 +144,8 @@ class PivotProcessor:
                     created_sheets.add(sheet_name)
 
                     if prefix == "预测":
-                        month_pattern = f"{int(ym[-2:])}月预测"
-                        if month_pattern in df.columns:
-                            df_filtered = df[df["生产料号"] == item_name][["生产料号", month_pattern]]
-                        else:
-                            df_filtered = pd.DataFrame()
+                        # 只匹配生产料号（品名），不再按月份列筛选
+                        df_filtered = df[df["生产料号"] == item_name]
                     else:
                         df_temp = df.copy()
                         if date_col in df_temp.columns:
