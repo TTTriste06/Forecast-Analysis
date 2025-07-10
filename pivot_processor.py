@@ -4,6 +4,7 @@ from openpyxl.styles import Font
 from openpyxl.utils.dataframe import dataframe_to_rows
 from io import BytesIO
 import re
+from spire.xls import Workbook, HyperLinkType, FileFormat
 
 class PivotProcessor:
     def process(self, template_df, forecast_file, order_file, sales_file, mapping_file):
@@ -137,8 +138,8 @@ class PivotProcessor:
                         sheet_name = f"{base_name[:27]}-{suffix}"
                         suffix += 1
 
-                    internalLink = sheet.HyperLinks.Add(cell)
-                    internalLink.Type = HyperLinkType.Workbook
+                    internalLink = ws_main.HyperLinks.Add(cell)
+                    internalLink.Type = HyperLinkType.wb
                     internalLink.TextToDisplay = val
                     internalLink.Address = "{sheet_name}!A1"
 
