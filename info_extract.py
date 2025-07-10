@@ -6,7 +6,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 
 
-def extract_all_year_months(df_forecast, df_order, df_sales, forecast_year):
+def extract_all_year_months(df_forecast, df_order, df_sales, forecast_year = None):
     # 1. 从 forecast header 提取 x月预测 列中的月份
     if forecast_year is None:
         forecast_year = datetime.today().year
