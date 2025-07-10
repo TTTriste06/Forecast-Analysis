@@ -3,6 +3,7 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font
 from openpyxl.utils.dataframe import dataframe_to_rows
 from io import BytesIO
+import re
 
 class PivotProcessor:
     def process(self, template_df, forecast_file, order_file, sales_file, mapping_file):
@@ -12,7 +13,6 @@ class PivotProcessor:
         mapping_df = pd.read_excel(mapping_file)
         mapping_semi, mapping_new, mapping_sub = split_mapping_data(mapping_df)
 
-        # Step 1: 读取主计划模板
         main_df = template_df[["晶圆", "规格", "品名"]].copy()
         main_df.columns = ["晶圆品名", "规格", "品名"]
 
@@ -95,7 +95,6 @@ class PivotProcessor:
             order_file.to_excel(writer, index=False, sheet_name="原始-订单")
             sales_file.to_excel(writer, index=False, sheet_name="原始-出货")
 
-            # 添加跳转超链接和明细 Sheet
             self.add_detail_link_and_sheets(
                 wb=wb,
                 ws_main=ws,
@@ -107,6 +106,10 @@ class PivotProcessor:
 
         output.seek(0)
         return main_df, output
+
+    def safe_sheet_name(self, name: str) -> str:
+        name = re.sub(r"[\\/*?:\[\]]", "", name)
+        return name
 
     def add_detail_link_and_sheets(self, wb, ws_main, df_order, df_sales, df_forecast, all_months):
         created_sheets = set()
@@ -126,10 +129,12 @@ class PivotProcessor:
                         continue
 
                     raw_name = f"{prefix}-{ym}-{item_name}"
+                    raw_name = self.safe_sheet_name(raw_name)
                     sheet_name = raw_name[:31]
                     suffix = 1
+                    base_name = sheet_name
                     while sheet_name in created_sheets:
-                        sheet_name = f"{raw_name[:27]}-{suffix}"
+                        sheet_name = f"{base_name[:27]}-{suffix}"
                         suffix += 1
 
                     cell.hyperlink = f"#'{sheet_name}'!A1"
