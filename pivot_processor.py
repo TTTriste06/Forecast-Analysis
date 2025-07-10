@@ -4,7 +4,6 @@ from openpyxl.styles import Font
 from openpyxl.utils.dataframe import dataframe_to_rows
 from io import BytesIO
 import re
-from spire.xls import Workbook, HyperLinkType, FileFormat
 
 class PivotProcessor:
     def process(self, template_df, forecast_file, order_file, sales_file, mapping_file):
