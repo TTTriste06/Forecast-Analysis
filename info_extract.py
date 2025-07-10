@@ -20,7 +20,7 @@ def extract_all_year_months(df_forecast, df_order, df_sales, forecast_year = Non
 
     # 2. 从 order 文件第 B 列（假设是“订单日期”）
     order_date_col = df_order.columns[11]
-    df_order[order_date_col] = pd.to_datetime(df_order[order_date_col], errors="coerce")
+    pd.to_datetime(df_temp[date_col], format="%Y-%m-%d", errors="coerce")
     order_months = (
         df_order[order_date_col]
         .dropna()
