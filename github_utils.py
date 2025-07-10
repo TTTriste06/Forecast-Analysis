@@ -84,9 +84,15 @@ def load_file_with_github_fallback(file_key, uploaded_file, sheet_name=0, header
     }
 
     if uploaded_file is not None:
-        return pd.read_excel(uploaded_file, sheet_name = sheet_name, header=header, engine="openpyxl")
-    
-    # fallback 读取
+        # ✅ 自动上传新文件到 GitHub
+        filename = FILENAME_KEYS.get(file_key)
+        if filename:
+            upload_to_github(uploaded_file, filename)
+
+        # ✅ 返回本地上传的文件内容
+        return pd.read_excel(uploaded_file, sheet_name=sheet_name, header=header, engine="openpyxl")
+
+    # fallback 下载
     if file_key not in fallback_urls:
         raise ValueError(f"⚠️ 未识别的辅助文件类型：{file_key}")
 
@@ -94,9 +100,9 @@ def load_file_with_github_fallback(file_key, uploaded_file, sheet_name=0, header
     response = requests.get(url)
     if not response.ok:
         raise ValueError(f"❌ 无法从 GitHub 获取文件：{url}")
-    
+
     content = response.content
     try:
-        return pd.read_excel(BytesIO(content), sheet_name = sheet_name, header=header, engine="openpyxl")
+        return pd.read_excel(BytesIO(content), sheet_name=sheet_name, header=header, engine="openpyxl")
     except Exception as e:
         raise ValueError(f"❌ 无法读取 Excel 文件（可能不是 .xlsx 格式）：{e}")
