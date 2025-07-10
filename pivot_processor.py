@@ -138,10 +138,7 @@ class PivotProcessor:
                         sheet_name = f"{base_name[:27]}-{suffix}"
                         suffix += 1
 
-                    internalLink = ws_main.HyperLinks.Add(cell)
-                    internalLink.Type = HyperLinkType.wb
-                    internalLink.TextToDisplay = val
-                    internalLink.Address = "{sheet_name}!A1"
+                    cell.value = f'=HYPERLINK("#\'{sheet_name}\'!A1", "{cell.value}")'
 
                     cell.font = Font(underline="single", color="0000FF")
 
