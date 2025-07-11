@@ -156,9 +156,17 @@ class PivotProcessor:
                             df_filtered = pd.DataFrame()
 
                     ws_detail = wb.create_sheet(sheet_name)
+
+                    # 添加“返回主页”按钮
+                    return_cell = ws_detail.cell(row=1, column=1)
+                    return_cell.value = '=HYPERLINK("#预测分析!A1", "⬅ 返回主页")'
+                    return_cell.font = Font(underline="single", color="0000FF")
+                    
+                    start_row = 2  # 从第 2 行开始写明细数据
                     if not df_filtered.empty:
-                        for r_idx, row_data in enumerate(dataframe_to_rows(df_filtered, index=False, header=True), start=1):
+                        for r_idx, row_data in enumerate(dataframe_to_rows(df_filtered, index=False, header=True), start=start_row):
                             for c_idx, val in enumerate(row_data, start=1):
-                                ws_detail.cell(row=r_idx, column=c_idx, value=val)
+                                ws_detail.cell(r_idx, c_idx, value=val)
                     else:
-                        ws_detail.cell(row=1, column=1, value="无匹配数据")
+                        ws_detail.cell(start_row, 1, value="无匹配数据")
+                    
