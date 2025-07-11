@@ -113,7 +113,7 @@ class PivotProcessor:
 
     def add_detail_link_and_sheets(self, wb, ws_main, df_order, df_sales, df_forecast, all_months):
         created_sheets = set()
-
+    
         for row in range(3, ws_main.max_row + 1):
             item_name = ws_main.cell(row=row, column=3).value
             for i, ym in enumerate(all_months):
@@ -127,46 +127,52 @@ class PivotProcessor:
                     val = cell.value
                     if not val or float(val) == 0:
                         continue
-
-                    raw_name = f"{prefix}-{ym}-{item_name}"
-                    raw_name = self.safe_sheet_name(raw_name)
-                    sheet_name = raw_name[:31]
-                    suffix = 1
-                    base_name = sheet_name
-                    while sheet_name in created_sheets:
-                        sheet_name = f"{base_name[:27]}-{suffix}"
-                        suffix += 1
-
-                    cell.value = f'=HYPERLINK("#\'{sheet_name}\'!A1", "{cell.value}")'
-
-                    cell.font = Font(underline="single", color="0000FF")
-
-                    created_sheets.add(sheet_name)
-
+    
                     if prefix == "预测":
-                        # 只匹配生产料号（品名），不再按月份列筛选
-                        df_filtered = df[df["生产料号"] == item_name]
+                        raw_name = f"{prefix}-{item_name}"  # 所有月份共用一个
+                    else:
+                        raw_name = f"{prefix}-{ym}-{item_name}"
+                    sheet_name = self.safe_sheet_name(raw_name)[:31]
+    
+                    # 已创建的预测页就复用链接，不再重复建 sheet
+                    if raw_name in created_sheets:
+                        cell.value = f'=HYPERLINK("#\'{sheet_name}\'!A1", "{val}")'
+                        cell.font = Font(underline="single", color="0000FF")
+                        continue
+    
+                    created_sheets.add(raw_name)
+                    cell.value = f'=HYPERLINK("#\'{sheet_name}\'!A1", "{val}")'
+                    cell.font = Font(underline="single", color="0000FF")
+    
+                    # 筛选数据
+                    if prefix == "预测":
+                        month_pattern = f"{int(ym[-2:])}月预测"
+                        if month_pattern in df.columns:
+                            df_filtered = df[df["生产料号"] == item_name][["生产料号", month_pattern]]
+                        else:
+                            df_filtered = pd.DataFrame()
                     else:
                         df_temp = df.copy()
                         if date_col in df_temp.columns:
-                            df_temp[date_col] = pd.to_datetime(df_temp[date_col], errors="coerce")
+                            df_temp[date_col] = pd.to_datetime(df_temp[date_col], format="%Y-%m-%d", errors="coerce")
                             df_temp["年月"] = df_temp[date_col].dt.to_period("M").astype(str)
-                            df_filtered = df_temp[(df_temp["品名"] == item_name) & (df_temp["年月"] == ym)]
+                            if "品名" in df_temp.columns:
+                                df_filtered = df_temp[(df_temp["品名"] == item_name) & (df_temp["年月"] == ym)]
+                            else:
+                                print(f"[⚠️ DEBUG] {prefix} 数据缺少 '品名' 列，现有列为：{df_temp.columns.tolist()}")
+                                df_filtered = pd.DataFrame()
                         else:
                             df_filtered = pd.DataFrame()
-
+    
                     ws_detail = wb.create_sheet(sheet_name)
-
-                    # 添加“返回主页”按钮
-                    return_cell = ws_detail.cell(row=1, column=1)
-                    return_cell.value = '=HYPERLINK("#预测分析!A1", "⬅ 返回主页")'
-                    return_cell.font = Font(underline="single", color="0000FF")
-                    
-                    start_row = 2  # 从第 2 行开始写明细数据
                     if not df_filtered.empty:
-                        for r_idx, row_data in enumerate(dataframe_to_rows(df_filtered, index=False, header=True), start=start_row):
+                        for r_idx, row_data in enumerate(dataframe_to_rows(df_filtered, index=False, header=True), start=2):
                             for c_idx, val in enumerate(row_data, start=1):
-                                ws_detail.cell(r_idx, c_idx, value=val)
+                                ws_detail.cell(row=r_idx, column=c_idx, value=val)
                     else:
-                        ws_detail.cell(start_row, 1, value="无匹配数据")
-                    
+                        ws_detail.cell(row=2, column=1, value="无匹配数据")
+    
+                    # 添加返回主页按钮
+                    back_cell = ws_detail.cell(row=1, column=1)
+                    back_cell.value = '=HYPERLINK("#\'预测分析\'!A1", "返回主页")'
+                    back_cell.font = Font(underline="single", color="0000FF")
