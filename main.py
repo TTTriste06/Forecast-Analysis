@@ -21,7 +21,7 @@ def main():
 
     
         processor = PivotProcessor()
-        df_result, excel_output = processor.process(template_file, forecast_file, order_file, sales_file, mapping_file)
+        df_result, excel_output = processor.process(template_df, forecast_df, order_df, sales_df, mapping_df)
     
         st.success("✅ 主计划生成成功！")
         st.dataframe(df_result, use_container_width=True)
