@@ -18,38 +18,38 @@ FILENAME_KEYS = {
 }
 
 def upload_to_github(file_obj, filename):
-    """
-    将 file_obj 文件上传至 GitHub 指定仓库
-    """
     token = st.secrets[GITHUB_TOKEN_KEY]
-    safe_filename = quote(filename)  # 支持中文
-
+    safe_filename = quote(filename)
     url = f"https://api.github.com/repos/{REPO_NAME}/contents/{safe_filename}"
-    headers = {
-        "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json"
-    }
+    headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"}
 
     file_obj.seek(0)
-    content = base64.b64encode(file_obj.read()).decode("utf-8")
+    raw = file_obj.read()
+    content_b64 = base64.b64encode(raw).decode("utf-8")
     file_obj.seek(0)
 
-    # 检查是否已存在
-    sha = None
-    get_resp = requests.get(url, headers=headers)
+    # 已存在则先比对
+    get_resp = requests.get(url, headers=headers, params={"ref": BRANCH})
     if get_resp.status_code == 200:
-        sha = get_resp.json().get("sha")
+        j = get_resp.json()
+        existing_b64 = j.get("content", "").strip()
+        if existing_b64 == content_b64:
+            # 内容一致，不提交，避免触发重部署
+            return
+        sha = j.get("sha")
+    else:
+        sha = None
 
     payload = {
         "message": f"upload {filename}",
-        "content": content,
+        "content": content_b64,
         "branch": BRANCH
     }
     if sha:
         payload["sha"] = sha
 
     put_resp = requests.put(url, headers=headers, json=payload)
-    if put_resp.status_code not in [200, 201]:
+    if put_resp.status_code not in (200, 201):
         raise Exception(f"❌ 上传失败：{put_resp.status_code} - {put_resp.text}")
 
 
